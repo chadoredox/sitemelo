@@ -421,7 +421,7 @@
                             <!-- Modal pour agrandir les cartes TCG -->
                             <div id="tcg-modal" class="tcg-modal">
                                 <div class="tcg-modal-content">
-                                    <span class="tcg-modal-close" onclick="closeTCGModal()">&times;</span>
+                                    <span class="tcg-modal-close" onclick="window.closeTCGModal()">&times;</span>
                                     <img id="tcg-modal-image" src="" alt="Carte Pokémon">
                                     <div class="tcg-modal-info">
                                         <div id="tcg-modal-name" class="font-bold text-lg"></div>
@@ -1345,17 +1345,17 @@
                 </div>
             `;
             
-            // Essayer plusieurs fois avec gestion CORS améliorée
-            const maxRetries = 4;
-            let lastError = null;
-            let isCorsError = false;
-            
             // Liste des stratégies de recherche à essayer (par ordre de priorité)
             const searchStrategies = [
                 `name:"${englishName}"`,      // Recherche exacte avec guillemets
                 `name:${englishName}*`,       // Recherche avec wildcard
                 `name:${englishName}`,        // Recherche simple
             ];
+            
+            // Réduire le nombre de tentatives pour accélérer (2 tentatives au lieu de 4)
+            const maxRetries = 2;
+            let lastError = null;
+            let isCorsError = false;
             
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
                 // Essayer chaque stratégie de recherche
@@ -1364,8 +1364,8 @@
                     const apiUrl = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(searchQuery)}&pageSize=50`;
                     
                     try {
-                        // Timeout progressif : 20s, 30s, 40s, 50s
-                        const timeout = 20000 + (attempt - 1) * 10000;
+                        // Timeout réduit : 15s, 20s (au lieu de 20s, 30s, 40s, 50s)
+                        const timeout = 15000 + (attempt - 1) * 5000;
                         const controller = new AbortController();
                         const timeoutId = setTimeout(() => controller.abort(), timeout);
                         
@@ -1917,8 +1917,21 @@
                 const smallImage = card.image || card.imageLarge;
                 const largeImage = card.imageLarge || card.image;
                 
+                // Échapper les données pour éviter les problèmes avec les guillemets
+                const cardData = {
+                    image: largeImage,
+                    name: card.name,
+                    set: card.set || '',
+                    rarity: card.rarity || ''
+                };
+                
                 html += `
-                    <div class="pokedex-card rounded-xl p-3 cursor-pointer hover:scale-105 transition-transform group relative" style="animation-delay: ${index * 30}ms" onclick="openTCGModal('${largeImage}', '${card.name.replace(/'/g, "\\'")}', '${(card.set || '').replace(/'/g, "\\'")}', '${(card.rarity || '').replace(/'/g, "\\'")}')">
+                    <div class="pokedex-card rounded-xl p-3 cursor-pointer hover:scale-105 transition-transform group relative tcg-card-item" 
+                         style="animation-delay: ${index * 30}ms"
+                         data-image="${encodeURIComponent(largeImage)}"
+                         data-name="${encodeURIComponent(card.name)}"
+                         data-set="${encodeURIComponent(card.set || '')}"
+                         data-rarity="${encodeURIComponent(card.rarity || '')}">
                         <div class="relative">
                             <img 
                                 src="${smallImage}" 
@@ -1955,6 +1968,17 @@
             
             container.innerHTML = html;
             
+            // Ajouter les event listeners pour ouvrir la modal
+            container.querySelectorAll('.tcg-card-item').forEach(cardElement => {
+                cardElement.addEventListener('click', function() {
+                    const imageUrl = decodeURIComponent(this.dataset.image);
+                    const name = decodeURIComponent(this.dataset.name);
+                    const set = decodeURIComponent(this.dataset.set);
+                    const rarity = decodeURIComponent(this.dataset.rarity);
+                    openTCGModal(imageUrl, name, set, rarity);
+                });
+            });
+            
             // Preload large images in background for smoother hover
             if (!showAll) {
                 cardsToShow.forEach(card => {
@@ -1966,28 +1990,40 @@
             }
         }
 
-        // Fonctions pour la modal TCG
-        function openTCGModal(imageUrl, name, set, rarity) {
+        // Fonctions pour la modal TCG (accessible globalement)
+        window.openTCGModal = function(imageUrl, name, set, rarity) {
+            console.log('Opening modal with:', { imageUrl, name, set, rarity });
             const modal = document.getElementById('tcg-modal');
             const modalImage = document.getElementById('tcg-modal-image');
             const modalName = document.getElementById('tcg-modal-name');
             const modalSet = document.getElementById('tcg-modal-set');
             const modalRarity = document.getElementById('tcg-modal-rarity');
             
-            modalImage.src = imageUrl;
-            modalName.textContent = name;
-            modalSet.textContent = set || '';
-            modalRarity.textContent = rarity || '';
+            if (!modal) {
+                console.error('Modal element not found!');
+                return;
+            }
+            if (!modalImage) {
+                console.error('Modal image element not found!');
+                return;
+            }
+            
+            modalImage.src = imageUrl || '';
+            if (modalName) modalName.textContent = name || '';
+            if (modalSet) modalSet.textContent = set || '';
+            if (modalRarity) modalRarity.textContent = rarity || '';
             
             modal.classList.add('active');
             document.body.style.overflow = 'hidden'; // Empêcher le scroll
-        }
-
-        function closeTCGModal() {
+        };
+        
+        window.closeTCGModal = function() {
             const modal = document.getElementById('tcg-modal');
-            modal.classList.remove('active');
-            document.body.style.overflow = ''; // Réactiver le scroll
-        }
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = ''; // Réactiver le scroll
+            }
+        };
 
         // Fermer la modal en cliquant en dehors de l'image
         document.addEventListener('DOMContentLoaded', function() {
@@ -1995,14 +2031,14 @@
             if (modal) {
                 modal.addEventListener('click', function(e) {
                     if (e.target === modal) {
-                        closeTCGModal();
+                        window.closeTCGModal();
                     }
                 });
                 
                 // Fermer avec la touche Escape
                 document.addEventListener('keydown', function(e) {
                     if (e.key === 'Escape' && modal.classList.contains('active')) {
-                        closeTCGModal();
+                        window.closeTCGModal();
                     }
                 });
             }
