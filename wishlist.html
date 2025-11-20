@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wishlist & Tradelist · Sailor Mélo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --violet: #8b5cf6;
+      --rose: #f472b6;
+      --bleu: #38bdf8;
+      --jaune: #facc15;
+      --noir: #0f172a;
+      --blanc: #f8fafc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Poppins","Segoe UI", sans-serif;
+      background: #050113;
+      color: var(--blanc);
+      min-height: 100vh;
+    }
+    header {
+      text-align: center;
+      padding: 5rem 1.5rem 3rem;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(244,114,182,0.2), transparent 60%),
+                  radial-gradient(circle at 80% 10%, rgba(56,189,248,0.25), transparent 55%),
+                  linear-gradient(140deg, #050113, #140932, #061d45);
+      z-index: -1;
+      animation: glow 20s ease-in-out infinite;
+      background-size: 200% 200%;
+    }
+    @keyframes glow {
+      0% { background-position: 0% 40%; }
+      50% { background-position: 100% 60%; }
+      100% { background-position: 0% 40%; }
+    }
+    .stellar-nav {
+      margin-bottom: 2rem;
+      display: inline-flex;
+      gap: 1.2rem;
+      padding: 0.8rem 1.8rem;
+      border-radius: 999px;
+      border: 1px solid rgba(248,250,252,0.25);
+      background: rgba(15,23,42,0.45);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .stellar-nav a {
+      color: rgba(248,250,252,0.85);
+      text-decoration: none;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+    }
+    .stellar-nav a:hover { color: var(--jaune); }
+    h1 {
+      font-size: clamp(2.4rem, 5vw, 4rem);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin: 0;
+    }
+    h1 span {
+      background: linear-gradient(120deg, rgba(244,114,182,0.7), rgba(56,189,248,0.7));
+      padding: 0.3em 0.6em;
+      border-radius: 999px;
+    }
+    p.lead {
+      max-width: 720px;
+      margin: 1.3rem auto 0;
+      color: rgba(248,250,252,0.85);
+      line-height: 1.6;
+    }
+    main {
+      padding: 2rem clamp(1.5rem, 5vw, 5rem) 4rem;
+      display: grid;
+      gap: 2rem;
+    }
+    section {
+      border-radius: 30px;
+      border: 1px solid rgba(248,250,252,0.15);
+      background: rgba(6,10,30,0.78);
+      padding: clamp(1.8rem, 4vw, 3rem);
+      box-shadow: 0 25px 60px rgba(5,8,20,0.6);
+    }
+    .section-title {
+      text-transform: uppercase;
+      letter-spacing: 0.22rem;
+      font-size: 0.85rem;
+      color: rgba(248,250,252,0.7);
+      margin-bottom: 0.5rem;
+    }
+    form {
+      display: grid;
+      gap: 0.8rem;
+      margin-top: 1rem;
+    }
+    label {
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(248,250,252,0.7);
+    }
+    input, select, button {
+      font: inherit;
+      border-radius: 18px;
+      border: 1px solid rgba(248,250,252,0.25);
+      padding: 0.85rem 1rem;
+      background: rgba(5,8,24,0.9);
+      color: var(--blanc);
+    }
+    button {
+      background: linear-gradient(120deg, var(--rose), var(--violet));
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      transition: transform 0.2s ease;
+    }
+    button:hover { transform: translateY(-2px); }
+    .list-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-top: 1.3rem;
+    }
+    .list-card {
+      border-radius: 20px;
+      border: 1px solid rgba(56,189,248,0.25);
+      background: rgba(56,189,248,0.08);
+      padding: 1rem 1.2rem;
+      min-height: 140px;
+    }
+    .list-card h3 {
+      margin: 0 0 0.6rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--bleu);
+      font-size: 1rem;
+    }
+    .list-card ul {
+      margin: 0;
+      padding-left: 1rem;
+      color: rgba(248,250,252,0.85);
+      line-height: 1.6;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.3rem 0.8rem;
+      border-radius: 999px;
+      border: 1px solid rgba(250,204,21,0.45);
+      background: rgba(250,204,21,0.08);
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .match-card {
+      border-radius: 22px;
+      border: 1px solid rgba(244,114,182,0.35);
+      background: rgba(244,114,182,0.12);
+      padding: 1.1rem 1.4rem;
+      margin-top: 1.2rem;
+    }
+    .match-card strong {
+      color: var(--rose);
+    }
+    footer {
+      text-align: center;
+      padding: 2rem 1rem 3rem;
+      color: rgba(248,250,252,0.6);
+      font-size: 0.85rem;
+    }
+    @media (max-width: 620px) {
+      .stellar-nav { gap: 0.7rem; padding: 0.6rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="stellar-nav">
+      <a href="index.html">Accueil</a>
+      <a href="test.html">Sailor Mélo</a>
+      <a href="pokedex.html">Pokédex</a>
+      <a href="forum.html">Forum</a>
+      <a href="calendrier.html">Calendrier</a>
+      <a href="quiz.html">Quiz</a>
+      <a href="estimateur.html">Estimateur</a>
+      <a href="collection.html">Classeur</a>
+      <a href="wishlist.html">Wishlist</a>
+    </nav>
+    <h1><span>Wishlist</span> & Tradelist</h1>
+    <p class="lead">
+      Organisez vos recherches et vos doubles. Chaque carte ajoutée alimente les suggestions d’échanges grâce à un
+      matching automatique entre membres de la communauté Sailor Mélo.
+    </p>
+  </header>
+
+  <main>
+    <section>
+      <p class="section-title">Wishlist</p>
+      <h2>Cartes que vous recherchez</h2>
+      <form id="wishlist-form">
+        <div>
+          <label for="wish-name">Nom de la carte</label>
+          <input id="wish-name" type="text" placeholder="Ex : Lugia V Alternate Art" required />
+        </div>
+        <div>
+          <label for="wish-priority">Priorité</label>
+          <select id="wish-priority">
+            <option value="Haute">Haute</option>
+            <option value="Normale">Normale</option>
+            <option value="Basse">Basse</option>
+          </select>
+        </div>
+        <button type="submit">Ajouter à la Wishlist</button>
+      </form>
+      <div class="list-card" style="margin-top:1.2rem;">
+        <h3>Wishlist actuelle</h3>
+        <ul id="wishlist-items">
+          <li>Ajoutez votre première carte désirée.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-title">Tradelist</p>
+      <h2>Cartes prêtes à l’échange</h2>
+      <form id="tradelist-form">
+        <div>
+          <label for="trade-name">Nom de la carte</label>
+          <input id="trade-name" type="text" placeholder="Ex : Mewtwo EX Shining Legends" required />
+        </div>
+        <div>
+          <label for="trade-condition">État</label>
+          <select id="trade-condition">
+            <option value="Mint">Mint / Gradée</option>
+            <option value="Near Mint">Near Mint</option>
+            <option value="Light Play">Light Play</option>
+          </select>
+        </div>
+        <div>
+          <label for="trade-value">Valeur estimée (€)</label>
+          <input id="trade-value" type="number" step="0.01" placeholder="Basé sur Estimateur" />
+        </div>
+        <button type="submit">Ajouter à la Tradelist</button>
+      </form>
+      <div class="list-card" style="margin-top:1.2rem;">
+        <h3>Tradelist actuelle</h3>
+        <ul id="tradelist-items">
+          <li>Aucun doublon pour le moment.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-title">Matching</p>
+      <h2>Suggestions d’échanges</h2>
+      <p>Les propositions suivantes comparent vos listes avec celles des membres actifs (exemple de démonstration).</p>
+      <div id="matches">
+        <div class="match-card">Ajoutez des cartes à vos listes pour générer des suggestions.</div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Matching alimenté par la communauté Sailor Mélo · Synchronisation complète prévue pour la Phase 4.
+  </footer>
+
+  <script>
+    const wishlist = [];
+    const tradelist = [];
+    const community = [
+      { name: 'Luna', wishlist: ['Pikachu VMAX 045/185'], tradelist: ['Lugia V Alternate Art', 'Gardevoir EX 245/198'] },
+      { name: 'Nova', wishlist: ['Mew Gold Secret'], tradelist: ['Charizard SV49'] },
+      { name: 'Orion', wishlist: ['Rayquaza VMAX'], tradelist: ['Mewtwo EX Shining Legends'] }
+    ];
+
+    const wishlistEl = document.getElementById('wishlist-items');
+    const tradelistEl = document.getElementById('tradelist-items');
+    const matchesEl = document.getElementById('matches');
+
+    const renderList = (list, element) => {
+      if (!list.length) {
+        element.innerHTML = element === wishlistEl
+          ? '<li>Ajoutez votre première carte désirée.</li>'
+          : '<li>Aucun doublon pour le moment.</li>';
+        return;
+      }
+      element.innerHTML = list.map((item) => `<li>${item.label}</li>`).join('');
+    };
+
+    const renderMatches = () => {
+      const suggestions = [];
+
+      wishlist.forEach((wish) => {
+        community.forEach((user) => {
+          if (user.tradelist.some((card) => card.toLowerCase() === wish.name.toLowerCase())) {
+            suggestions.push({
+              type: 'Wishlist',
+              card: wish.name,
+              with: user.name,
+              offer: user.tradelist.find((card) => card.toLowerCase() === wish.name.toLowerCase()),
+              request: user.wishlist[0] || 'Carte équivalente'
+            });
+          }
+        });
+      });
+
+      tradelist.forEach((trade) => {
+        community.forEach((user) => {
+          if (user.wishlist.some((card) => card.toLowerCase() === trade.name.toLowerCase())) {
+            suggestions.push({
+              type: 'Tradelist',
+              card: trade.name,
+              with: user.name,
+              offer: user.tradelist[0] || 'À définir',
+              request: user.wishlist.find((card) => card.toLowerCase() === trade.name.toLowerCase())
+            });
+          }
+        });
+      });
+
+      if (!suggestions.length) {
+        matchesEl.innerHTML = '<div class="match-card">Ajoutez davantage de cartes pour détecter des correspondances.</div>';
+        return;
+      }
+
+      matchesEl.innerHTML = suggestions.map((match) => `
+        <div class="match-card">
+          <strong>${match.with}</strong> peut échanger <strong>${match.offer}</strong> contre votre carte <strong>${match.card}</strong>.
+          <br/>Suggestion: contactez ${match.with} — intérêt mutuel sur ${match.request}.
+        </div>
+      `).join('');
+    };
+
+    document.getElementById('wishlist-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const name = document.getElementById('wish-name').value.trim();
+      const priority = document.getElementById('wish-priority').value;
+      wishlist.push({ name, label: `${name} · priorité ${priority}` });
+      event.target.reset();
+      renderList(wishlist, wishlistEl);
+      renderMatches();
+    });
+
+    document.getElementById('tradelist-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const name = document.getElementById('trade-name').value.trim();
+      const condition = document.getElementById('trade-condition').value;
+      const value = document.getElementById('trade-value').value;
+      tradelist.push({ name, label: `${name} · ${condition}${value ? ` · ${value} €` : ''}` });
+      event.target.reset();
+      renderList(tradelist, tradelistEl);
+      renderMatches();
+    });
+  </script>
+</body>
+</html>
+

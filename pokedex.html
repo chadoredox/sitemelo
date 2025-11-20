@@ -1,0 +1,1984 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokédex - Pokémon Community</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <!-- Pokemon TCG API - using REST API directly -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+        }
+        .pokedex-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .pokedex-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover {
+            color: #fbbf24;
+            transform: translateY(-2px);
+        }
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+        .scroll-reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .search-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .search-input:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #fbbf24;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+        }
+        .pokemon-result {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+            position: relative;
+            z-index: 1;
+        }
+        .pokemon-result.active {
+            display: block;
+        }
+        .type-filter-container {
+            position: relative;
+            z-index: 100 !important;
+        }
+        .type-filter-button {
+            position: relative;
+            z-index: 101 !important;
+            pointer-events: auto !important;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .stat-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .stat-fill {
+            background: linear-gradient(90deg, #10b981, #059669);
+            height: 100%;
+            transition: width 1s ease;
+        }
+        .type-badge {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        }
+        .lore-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #fbbf24;
+        }
+        .evolution-chain {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-bolt text-white text-sm"></i>
+                    </div>
+                    <span class="text-xl font-bold text-white">Pokémon Community</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="index.html" class="nav-link text-slate-300 hover:text-white font-medium">Accueil</a>
+                    <a href="index.html" class="nav-link text-slate-300 hover:text-white font-medium">Sailor Mélo</a>
+                    <a href="pokedex.html" class="nav-link text-white font-medium">Pokédex</a>
+                    <a href="forum.html" class="nav-link text-slate-300 hover:text-white font-medium">Forum</a>
+                    <a href="calendrier.html" class="nav-link text-slate-300 hover:text-white font-medium">Calendrier</a>
+                    <a href="quiz.html" class="nav-link text-slate-300 hover:text-white font-medium">Quiz</a>
+                    <a href="estimateur.html" class="nav-link text-slate-300 hover:text-white font-medium">Estimateur</a>
+                    <a href="collection.html" class="nav-link text-slate-300 hover:text-white font-medium">Classeur</a>
+                    <a href="wishlist.html" class="nav-link text-slate-300 hover:text-white font-medium">Wishlist</a>
+                </div>
+                <div class="md:hidden">
+                    <button class="text-white">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-24 pb-12 bg-gradient-to-br from-slate-800/50 to-slate-900/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 scroll-reveal">
+                <h1 class="text-4xl md:text-6xl font-black text-white mb-6">
+                    <span class="bg-gradient-to-r from-blue-400 via-teal-500 to-green-500 bg-clip-text text-transparent">
+                        Pokédex
+                    </span>
+                    <span class="text-white"> Numérique</span>
+                </h1>
+                <p class="text-xl text-slate-300 max-w-3xl mx-auto">Explorez l'univers Pokémon et découvrez l'histoire fascinante de chaque créature</p>
+            </div>
+            
+            <!-- Search Bar -->
+            <div class="max-w-2xl mx-auto scroll-reveal">
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        id="pokemon-search" 
+                        placeholder="Recherchez un Pokémon (ex: Pikachu, Dracaufeu, Mewtwo)..."
+                        class="search-input w-full py-4 px-6 pr-12 rounded-2xl text-white placeholder-slate-400 focus:outline-none"
+                        onkeypress="handleSearch(event)"
+                        oninput="filterPokemonList()"
+                    >
+                    <button onclick="searchPokemon()" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-yellow-400 hover:text-yellow-300 transition-colors">
+                        <i class="fas fa-search text-xl"></i>
+                    </button>
+                </div>
+                <!-- Type Filters -->
+                <div class="mt-4 flex flex-wrap justify-center gap-2 relative z-50" style="position: relative; z-index: 100;">
+                    <button onclick="filterByType('all')" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors text-sm font-semibold relative z-50" style="position: relative; z-index: 101;">Tous</button>
+                    <button onclick="filterByType('normal')" class="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg transition-colors text-sm relative z-50" style="position: relative; z-index: 101;">Normal</button>
+                    <button onclick="filterByType('fire')" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm relative z-50" style="position: relative; z-index: 101;">Feu</button>
+                    <button onclick="filterByType('water')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm relative z-50" style="position: relative; z-index: 101;">Eau</button>
+                    <button onclick="filterByType('electric')" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors text-sm relative z-50" style="position: relative; z-index: 101;">Électrik</button>
+                    <button onclick="filterByType('grass')" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm relative z-50" style="position: relative; z-index: 101;">Plante</button>
+                    <button onclick="filterByType('ice')" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors text-sm relative z-50" style="position: relative; z-index: 101;">Glace</button>
+                    <button onclick="filterByType('fighting')" class="px-4 py-2 bg-red-800 hover:bg-red-900 text-white rounded-lg transition-colors text-sm relative z-50" style="position: relative; z-index: 101;">Combat</button>
+                    <button onclick="filterByType('poison')" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm relative z-50" style="position: relative; z-index: 101;">Poison</button>
+                    <button onclick="filterByType('ground')" class="px-4 py-2 bg-amber-700 hover:bg-amber-800 text-white rounded-lg transition-colors text-sm relative z-50" style="position: relative; z-index: 101;">Sol</button>
+                    <button onclick="filterByType('flying')" class="px-4 py-2 bg-indigo-400 hover:bg-indigo-500 text-white rounded-lg transition-colors text-sm relative z-50" style="position: relative; z-index: 101;">Vol</button>
+                    <button onclick="filterByType('psychic')" class="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg transition-colors text-sm relative z-50" style="position: relative; z-index: 101;">Psy</button>
+                    <button onclick="filterByType('bug')" class="px-4 py-2 bg-lime-600 hover:bg-lime-700 text-white rounded-lg transition-colors text-sm relative z-50" style="position: relative; z-index: 101;">Insecte</button>
+                    <button onclick="filterByType('rock')" class="px-4 py-2 bg-stone-600 hover:bg-stone-700 text-white rounded-lg transition-colors text-sm relative z-50" style="position: relative; z-index: 101;">Roche</button>
+                    <button onclick="filterByType('ghost')" class="px-4 py-2 bg-violet-700 hover:bg-violet-800 text-white rounded-lg transition-colors text-sm relative z-50" style="position: relative; z-index: 101;">Spectre</button>
+                    <button onclick="filterByType('dragon')" class="px-4 py-2 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg transition-colors text-sm relative z-50" style="position: relative; z-index: 101;">Dragon</button>
+                    <button onclick="filterByType('dark')" class="px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg transition-colors text-sm relative z-50" style="position: relative; z-index: 101;">Ténèbres</button>
+                    <button onclick="filterByType('steel')" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors text-sm relative z-50" style="position: relative; z-index: 101;">Acier</button>
+                    <button onclick="filterByType('fairy')" class="px-4 py-2 bg-pink-400 hover:bg-pink-500 text-white rounded-lg transition-colors text-sm relative z-50" style="position: relative; z-index: 101;">Fée</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pokemon Result Section -->
+    <section id="pokemon-result" class="py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Default State - All Pokemon List -->
+            <div id="popular-pokemon" class="scroll-reveal">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-white mb-4">Tous les Pokémon</h2>
+                    <p class="text-slate-300">Cliquez sur un Pokémon pour découvrir son histoire détaillée</p>
+                    <p class="text-slate-400 text-sm mt-2" id="pokemon-count">Chargement des Pokémon...</p>
+                    <div class="mt-4 flex justify-center gap-2">
+                        <button onclick="loadGeneration(1)" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">Génération 1</button>
+                        <button onclick="loadGeneration(2)" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">Génération 2</button>
+                        <button onclick="loadGeneration(3)" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">Génération 3</button>
+                        <button onclick="loadGeneration(4)" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">Génération 4</button>
+                        <button onclick="loadGeneration(5)" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">Génération 5</button>
+                        <button onclick="loadGeneration(6)" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">Génération 6</button>
+                        <button onclick="loadGeneration(7)" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">Génération 7</button>
+                        <button onclick="loadGeneration(8)" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">Génération 8</button>
+                        <button onclick="loadGeneration(9)" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">Génération 9</button>
+                        <button onclick="loadAllGenerations()" class="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded text-sm font-bold">Tous</button>
+                </div>
+                    </div>
+
+                <div id="pokemon-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                    <div class="col-span-full text-center text-slate-400 py-8">
+                        <i class="fas fa-spinner fa-spin text-4xl mb-4"></i>
+                        <p>Chargement de la génération 1...</p>
+                            </div>
+                </div>
+            </div>
+
+            <!-- Pokemon Details -->
+            <div id="pokemon-details" class="pokemon-result">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Pokemon Info Card -->
+                    <div class="lg:col-span-2">
+                        <div class="pokedex-card rounded-2xl p-8 mb-8">
+                            <div class="flex items-start space-x-8">
+                                <div class="flex-shrink-0">
+                                    <div id="pokemon-image" class="w-48 h-48 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-2xl flex items-center justify-center">
+                                        <span class="text-8xl">⚡</span>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-4 mb-4">
+                                        <h2 id="pokemon-name" class="text-4xl font-black text-white">Pikachu</h2>
+                                        <div id="pokemon-types" class="flex space-x-2">
+                                            <span class="type-badge px-3 py-1 rounded-full text-white text-sm font-semibold">Électrik</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-2 gap-4 mb-6">
+                                        <div>
+                                            <span class="text-slate-400 text-sm">Taille</span>
+                                            <div id="pokemon-height" class="text-white font-semibold">0.4m</div>
+                                        </div>
+                                        <div>
+                                            <span class="text-slate-400 text-sm">Poids</span>
+                                            <div id="pokemon-weight" class="text-white font-semibold">6.0kg</div>
+                                        </div>
+                                        <div>
+                                            <span class="text-slate-400 text-sm">Catégorie</span>
+                                            <div id="pokemon-category" class="text-white font-semibold">Souris</div>
+                                        </div>
+                                        <div>
+                                            <span class="text-slate-400 text-sm">Talent</span>
+                                            <div id="pokemon-ability" class="text-white font-semibold">Statik</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Stats -->
+                                    <div class="space-y-3">
+                                        <h3 class="text-lg font-bold text-white mb-4">Statistiques</h3>
+                                        <div class="space-y-2">
+                                            <div class="flex items-center space-x-4">
+                                                <span class="text-slate-300 w-20 text-sm">PV</span>
+                                                <div class="stat-bar flex-1 h-2">
+                                                    <div class="stat-fill h-full" style="width: 65%"></div>
+                                                </div>
+                                                <span class="text-white text-sm w-12">65</span>
+                                            </div>
+                                            <div class="flex items-center space-x-4">
+                                                <span class="text-slate-300 w-20 text-sm">Attaque</span>
+                                                <div class="stat-bar flex-1 h-2">
+                                                    <div class="stat-fill h-full" style="width: 85%"></div>
+                                                </div>
+                                                <span class="text-white text-sm w-12">85</span>
+                                            </div>
+                                            <div class="flex items-center space-x-4">
+                                                <span class="text-slate-300 w-20 text-sm">Défense</span>
+                                                <div class="stat-bar flex-1 h-2">
+                                                    <div class="stat-fill h-full" style="width: 40%"></div>
+                                                </div>
+                                                <span class="text-white text-sm w-12">40</span>
+                                            </div>
+                                            <div class="flex items-center space-x-4">
+                                                <span class="text-slate-300 w-20 text-sm">Att. Spé</span>
+                                                <div class="stat-bar flex-1 h-2">
+                                                    <div class="stat-fill h-full" style="width: 95%"></div>
+                                                </div>
+                                                <span class="text-white text-sm w-12">95</span>
+                                            </div>
+                                            <div class="flex items-center space-x-4">
+                                                <span class="text-slate-300 w-20 text-sm">Déf. Spé</span>
+                                                <div class="stat-bar flex-1 h-2">
+                                                    <div class="stat-fill h-full" style="width: 45%"></div>
+                                                </div>
+                                                <span class="text-white text-sm w-12">45</span>
+                                            </div>
+                                            <div class="flex items-center space-x-4">
+                                                <span class="text-slate-300 w-20 text-sm">Vitesse</span>
+                                                <div class="stat-bar flex-1 h-2">
+                                                    <div class="stat-fill h-full" style="width: 90%"></div>
+                                                </div>
+                                                <span class="text-white text-sm w-12">90</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lore Section -->
+                        <div class="lore-section rounded-2xl p-8 mb-8">
+                            <h3 class="text-2xl font-bold text-white mb-4 flex items-center">
+                                <i class="fas fa-book text-yellow-400 mr-3"></i>
+                                Histoire et Lore
+                            </h3>
+                            <div id="pokemon-lore" class="space-y-4 text-slate-300">
+                                <p>Pikachu est une souris électrique qui stocke de l'électricité dans ses joues rouges. Quand il dort, il recharge son énergie en branchant sa queue dans une prise électrique.</p>
+                                <p>Dans la nature, Pikachu vit en groupe et communique avec ses congénères en envoyant des signaux électriques. Plus son énergie est élevée, plus ses joues brillent intensément.</p>
+                                <p>S'il se sent menacé, il peut libérer une décharge électrique pouvant atteindre 100 000 volts. Cependant, cela l'épuise complètement et il a besoin de se reposer.</p>
+                            </div>
+                        </div>
+
+                        <!-- Evolution Chain -->
+                        <div class="evolution-chain rounded-2xl p-8 mb-8">
+                            <h3 class="text-2xl font-bold text-white mb-6 flex items-center">
+                                <i class="fas fa-arrow-right text-yellow-400 mr-3"></i>
+                                Chaîne d'Évolution
+                            </h3>
+                            <div id="evolution-chain-container" class="flex items-center justify-center space-x-4 flex-wrap">
+                                <div class="text-center text-slate-400">
+                                    <i class="fas fa-spinner fa-spin text-2xl"></i>
+                                    <p class="text-sm mt-2">Chargement...</p>
+                                    </div>
+                                </div>
+                                    </div>
+
+                        <!-- TCG Cards Section -->
+                        <div class="evolution-chain rounded-2xl p-8">
+                            <h3 class="text-2xl font-bold text-white mb-6 flex items-center">
+                                <i class="fas fa-cards-blank text-yellow-400 mr-3"></i>
+                                Cartes TCG
+                            </h3>
+                            <div id="tcg-cards-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                <div class="col-span-full text-center text-slate-400 py-8">
+                                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                    <p>Chargement des cartes...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar -->
+                    <div class="space-y-6">
+                        <!-- Quick Facts -->
+                        <div class="pokedex-card rounded-2xl p-6">
+                            <h3 class="text-xl font-bold text-white mb-4 flex items-center">
+                                <i class="fas fa-info-circle text-yellow-400 mr-2"></i>
+                                Faits Rapides
+                            </h3>
+                            <div id="quick-facts" class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-300 text-sm">Numéro National</span>
+                                    <span id="fact-number" class="text-white font-semibold">#0001</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-300 text-sm">Espèce</span>
+                                    <span id="fact-species" class="text-white font-semibold">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-300 text-sm">Type</span>
+                                    <span id="fact-types" class="text-white font-semibold">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-300 text-sm">Taille</span>
+                                    <span id="fact-height" class="text-white font-semibold">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-300 text-sm">Poids</span>
+                                    <span id="fact-weight" class="text-white font-semibold">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-300 text-sm">Couleur</span>
+                                    <span id="fact-color" class="text-white font-semibold">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-300 text-sm">Forme</span>
+                                    <span id="fact-shape" class="text-white font-semibold">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Habitat -->
+                        <div class="pokedex-card rounded-2xl p-6">
+                            <h3 class="text-xl font-bold text-white mb-4 flex items-center">
+                                <i class="fas fa-tree text-yellow-400 mr-2"></i>
+                                Habitat Naturel
+                            </h3>
+                            <p id="habitat-description" class="text-slate-300 text-sm mb-4">Chargement...</p>
+                            <div id="habitat-locations" class="space-y-2">
+                                <!-- Dynamically filled -->
+                            </div>
+                        </div>
+
+                        <!-- Fun Facts -->
+                        <div class="pokedex-card rounded-2xl p-6">
+                            <h3 class="text-xl font-bold text-white mb-4 flex items-center">
+                                <i class="fas fa-star text-yellow-400 mr-2"></i>
+                                Anecdotes
+                            </h3>
+                            <div id="fun-facts-list" class="space-y-3 text-slate-300 text-sm">
+                                <!-- Dynamically filled -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-700 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <div class="flex items-center justify-center space-x-2 mb-4">
+                    <div class="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-bolt text-white text-sm"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-white">Pokémon Community</span>
+                </div>
+                <p class="text-slate-400 mb-6">La communauté ultime pour les fans de Pokémon</p>
+                <div class="flex justify-center space-x-6 mb-6">
+                    <a href="#" class="text-slate-400 hover:text-white transition-colors">
+                        <i class="fab fa-twitter text-xl"></i>
+                    </a>
+                    <a href="#" class="text-slate-400 hover:text-white transition-colors">
+                        <i class="fab fa-discord text-xl"></i>
+                    </a>
+                    <a href="#" class="text-slate-400 hover:text-white transition-colors">
+                        <i class="fab fa-youtube text-xl"></i>
+                    </a>
+                    <a href="#" class="text-slate-400 hover:text-white transition-colors">
+                        <i class="fab fa-instagram text-xl"></i>
+                    </a>
+                </div>
+                <p class="text-slate-500 text-sm">© 2025 Pokémon Community. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let allPokemon = [];
+        let filteredPokemon = [];
+        let currentFilterType = 'all';
+        const typeColors = {
+            normal: 'slate-500', fire: 'red-500', water: 'blue-500', electric: 'yellow-500',
+            grass: 'green-500', ice: 'cyan-400', fighting: 'red-800', poison: 'purple-600',
+            ground: 'amber-700', flying: 'indigo-400', psychic: 'pink-600', bug: 'lime-600',
+            rock: 'stone-600', ghost: 'violet-700', dragon: 'indigo-700', dark: 'gray-800',
+            steel: 'gray-500', fairy: 'pink-400', stellar: 'purple-500'
+        };
+        const typeNamesFR = {
+            normal: 'Normal', fire: 'Feu', water: 'Eau', electric: 'Électrik',
+            grass: 'Plante', ice: 'Glace', fighting: 'Combat', poison: 'Poison',
+            ground: 'Sol', flying: 'Vol', psychic: 'Psy', bug: 'Insecte',
+            rock: 'Roche', ghost: 'Spectre', dragon: 'Dragon', dark: 'Ténèbres',
+            steel: 'Acier', fairy: 'Fée', stellar: 'Stellaire'
+        };
+
+        // Generation ranges
+        const generationRanges = {
+            1: { start: 1, end: 151 },
+            2: { start: 152, end: 251 },
+            3: { start: 252, end: 386 },
+            4: { start: 387, end: 493 },
+            5: { start: 494, end: 649 },
+            6: { start: 650, end: 721 },
+            7: { start: 722, end: 809 },
+            8: { start: 810, end: 905 },
+            9: { start: 906, end: 1025 }
+        };
+
+        // Load Pokemon by generation
+        async function loadGeneration(gen) {
+            const grid = document.getElementById('pokemon-grid');
+            const range = generationRanges[gen];
+            if (!range) return;
+            
+            grid.innerHTML = `<div class="col-span-full text-center text-slate-400">Chargement de la génération ${gen} (${range.end - range.start + 1} Pokémon)...</div>`;
+            document.getElementById('pokemon-count').textContent = `Chargement de la génération ${gen}...`;
+            
+            try {
+                const promises = [];
+                for (let i = range.start; i <= range.end; i++) {
+                    promises.push(
+                        fetch(`https://pokeapi.co/api/v2/pokemon/${i}`)
+                            .then(res => res.json())
+                            .catch(() => null)
+                    );
+                }
+                
+                const results = await Promise.all(promises);
+                const validPokemon = results.filter(p => p !== null);
+                
+                // Get French names for all Pokemon
+                const namePromises = validPokemon.map(pokemon => 
+                    getFrenchNameFromAPI(pokemon.id, pokemon.name)
+                );
+                const frenchNames = await Promise.all(namePromises);
+                
+                allPokemon = validPokemon.map((pokemon, index) => ({
+                    id: pokemon.id,
+                    name: pokemon.name,
+                    englishName: pokemon.name, // Store English name explicitly
+                    nameFR: frenchNames[index],
+                    types: pokemon.types.map(t => t.type.name),
+                    height: pokemon.height / 10,
+                    weight: pokemon.weight / 10,
+                    stats: {
+                        hp: pokemon.stats[0].base_stat,
+                        attack: pokemon.stats[1].base_stat,
+                        defense: pokemon.stats[2].base_stat,
+                        spAttack: pokemon.stats[3].base_stat,
+                        spDefense: pokemon.stats[4].base_stat,
+                        speed: pokemon.stats[5].base_stat
+                    },
+                    abilities: pokemon.abilities.map(a => a.ability.name),
+                    sprite: pokemon.sprites.other['official-artwork']?.front_default || pokemon.sprites.front_default,
+                    data: pokemon,
+                    generation: gen
+                }));
+                
+                filteredPokemon = [...allPokemon];
+                renderPokemonGrid();
+                document.getElementById('pokemon-count').textContent = `${allPokemon.length} Pokémon de la génération ${gen} chargés`;
+            } catch (error) {
+                console.error('Erreur lors du chargement des Pokémon:', error);
+                grid.innerHTML = '<div class="col-span-full text-center text-red-400">Erreur de chargement. Veuillez réessayer.</div>';
+            }
+        }
+
+        // Load all generations
+        async function loadAllGenerations() {
+            const grid = document.getElementById('pokemon-grid');
+            grid.innerHTML = '<div class="col-span-full text-center text-slate-400">Chargement de tous les Pokémon (cela peut prendre quelques instants)...</div>';
+            document.getElementById('pokemon-count').textContent = 'Chargement de tous les Pokémon...';
+            
+            try {
+                // First, get the total count
+                const speciesResponse = await fetch('https://pokeapi.co/api/v2/pokemon-species?limit=1');
+                const speciesData = await speciesResponse.json();
+                const totalCount = speciesData.count || 1025;
+                
+                allPokemon = [];
+                const batchSize = 50;
+                
+                for (let i = 1; i <= totalCount; i += batchSize) {
+                    const batch = [];
+                    for (let j = i; j < Math.min(i + batchSize, totalCount + 1); j++) {
+                        batch.push(
+                            fetch(`https://pokeapi.co/api/v2/pokemon/${j}`)
+                                .then(res => res.ok ? res.json() : null)
+                                .catch(() => null)
+                        );
+                    }
+                    
+                    const batchResults = await Promise.all(batch);
+                    const validBatch = batchResults.filter(p => p !== null);
+                    if (validBatch.length > 0) {
+                        // Get French names for batch
+                        const batchNamePromises = validBatch.map(p => 
+                            getFrenchNameFromAPI(p.id, p.name)
+                        );
+                        const batchFrenchNames = await Promise.all(batchNamePromises);
+                        
+                        validBatch.forEach((pokemon, index) => {
+                            const gen = getGenerationFromId(pokemon.id);
+                            allPokemon.push({
+                                id: pokemon.id,
+                                name: pokemon.name,
+                                englishName: pokemon.name, // Store English name explicitly
+                                nameFR: batchFrenchNames[index],
+                                types: pokemon.types.map(t => t.type.name),
+                                height: pokemon.height / 10,
+                                weight: pokemon.weight / 10,
+                                stats: {
+                                    hp: pokemon.stats[0].base_stat,
+                                    attack: pokemon.stats[1].base_stat,
+                                    defense: pokemon.stats[2].base_stat,
+                                    spAttack: pokemon.stats[3].base_stat,
+                                    spDefense: pokemon.stats[4].base_stat,
+                                    speed: pokemon.stats[5].base_stat
+                                },
+                                abilities: pokemon.abilities.map(a => a.ability.name),
+                                sprite: pokemon.sprites.other['official-artwork']?.front_default || pokemon.sprites.front_default,
+                                data: pokemon,
+                                generation: gen
+                            });
+                        });
+                    }
+                    
+                    document.getElementById('pokemon-count').textContent = `${allPokemon.length}/${totalCount} Pokémon chargés...`;
+                    renderPokemonGrid();
+                }
+                
+                filteredPokemon = [...allPokemon];
+                renderPokemonGrid();
+                document.getElementById('pokemon-count').textContent = `${allPokemon.length} Pokémon chargés (toutes générations)`;
+            } catch (error) {
+                console.error('Erreur lors du chargement des Pokémon:', error);
+                grid.innerHTML = '<div class="col-span-full text-center text-red-400">Erreur de chargement. Veuillez réessayer.</div>';
+            }
+        }
+
+        function getGenerationFromId(id) {
+            for (const [gen, range] of Object.entries(generationRanges)) {
+                if (id >= range.start && id <= range.end) {
+                    return parseInt(gen);
+                }
+            }
+            return 9;
+        }
+
+        // Get French name from API
+        async function getFrenchNameFromAPI(id, englishName) {
+            try {
+                const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`);
+                if (!response.ok) throw new Error('API error');
+                const speciesData = await response.json();
+                const frenchName = speciesData.names?.find(n => n.language.name === 'fr');
+                return frenchName ? frenchName.name : (englishName.charAt(0).toUpperCase() + englishName.slice(1));
+            } catch (error) {
+                console.warn(`Erreur pour le nom français du Pokémon ${id}:`, error);
+                // Fallback to hardcoded names for Gen 1 or capitalize English name
+                return getFrenchName(id, englishName);
+            }
+        }
+
+        // French names mapping for Generation 1
+        function getFrenchName(id, englishName) {
+            const frenchNames = {
+                1: 'Bulbizarre', 2: 'Herbizarre', 3: 'Florizarre', 4: 'Salamèche', 5: 'Reptincel',
+                6: 'Dracaufeu', 7: 'Carapuce', 8: 'Carabaffe', 9: 'Tortank', 10: 'Chenipan',
+                11: 'Chrysacier', 12: 'Papilusion', 13: 'Aspicot', 14: 'Coconfort', 15: 'Dardargnan',
+                16: 'Roucool', 17: 'Roucoups', 18: 'Roucarnage', 19: 'Rattata', 20: 'Rattatac',
+                21: 'Piafabec', 22: 'Rapasdepic', 23: 'Abo', 24: 'Arbok', 25: 'Pikachu',
+                26: 'Raichu', 27: 'Sabelette', 28: 'Sablaireau', 29: 'Nidoran♀', 30: 'Nidorina',
+                31: 'Nidoqueen', 32: 'Nidoran♂', 33: 'Nidorino', 34: 'Nidoking', 35: 'Mélofée',
+                36: 'Mélodelfe', 37: 'Goupix', 38: 'Feunard', 39: 'Rondoudou', 40: 'Grodoudou',
+                41: 'Nosferapti', 42: 'Nosferalto', 43: 'Mystherbe', 44: 'Ortide', 45: 'Rafflesia',
+                46: 'Paras', 47: 'Parasect', 48: 'Mimitoss', 49: 'Aéromite', 50: 'Taupiqueur',
+                51: 'Triopikeur', 52: 'Miaouss', 53: 'Persian', 54: 'Psykokwak', 55: 'Akwakwak',
+                56: 'Férosinge', 57: 'Colossinge', 58: 'Caninos', 59: 'Arcanin', 60: 'Ptitard',
+                61: 'Têtarte', 62: 'Tartard', 63: 'Abra', 64: 'Kadabra', 65: 'Alakazam',
+                66: 'Machoc', 67: 'Machopeur', 68: 'Mackogneur', 69: 'Chétiflor', 70: 'Boustiflor',
+                71: 'Empiflor', 72: 'Tentacool', 73: 'Tentacruel', 74: 'Racaillou', 75: 'Gravalanch',
+                76: 'Grolem', 77: 'Ponyta', 78: 'Galopa', 79: 'Ramoloss', 80: 'Flagadoss',
+                81: 'Magnéti', 82: 'Magnéton', 83: 'Canarticho', 84: 'Doduo', 85: 'Dodrio',
+                86: 'Otaria', 87: 'Lamantine', 88: 'Tadmorv', 89: 'Grotadmorv', 90: 'Kokiyas',
+                91: 'Crustabri', 92: 'Fantominus', 93: 'Spectrier', 94: 'Ectoplasma', 95: 'Onix',
+                96: 'Soporifik', 97: 'Hypnomade', 98: 'Krabby', 99: 'Krabboss', 100: 'Voltorbe',
+                101: 'Électrode', 102: 'Noeunoeuf', 103: 'Noadkoko', 104: 'Osselait', 105: 'Ossatueur',
+                106: 'Kicklee', 107: 'Tygnon', 108: 'Excelangue', 109: 'Smogo', 110: 'Smogogo',
+                111: 'Rhinocorne', 112: 'Rhinoferos', 113: 'Leveinard', 114: 'Saquedeneu', 115: 'Kangourex',
+                116: 'Hypotrempe', 117: 'Hypocéan', 118: 'Poissirène', 119: 'Poissoroy', 120: 'Stari',
+                121: 'Staross', 122: 'M. Mime', 123: 'Insécateur', 124: 'Lippoutou', 125: 'Élektek',
+                126: 'Magmar', 127: 'Scarabrute', 128: 'Tauros', 129: 'Magicarpe', 130: 'Léviator',
+                131: 'Lokhlass', 132: 'Métamorph', 133: 'Évoli', 134: 'Aquali', 135: 'Voltali',
+                136: 'Pyroli', 137: 'Porygon', 138: 'Amonita', 139: 'Amonistar', 140: 'Kabuto',
+                141: 'Kabutops', 142: 'Ptéra', 143: 'Ronflex', 144: 'Artikodin', 145: 'Électhor',
+                146: 'Sulfura', 147: 'Minidraco', 148: 'Draco', 149: 'Dracolosse', 150: 'Mewtwo',
+                151: 'Mew'
+            };
+            return frenchNames[id] || englishName.charAt(0).toUpperCase() + englishName.slice(1);
+        }
+
+        function renderPokemonGrid() {
+            const grid = document.getElementById('pokemon-grid');
+            grid.innerHTML = '';
+            
+            filteredPokemon.forEach(pokemon => {
+                const card = document.createElement('div');
+                card.className = 'pokedex-card rounded-2xl p-4 cursor-pointer hover:scale-105 transition-transform';
+                card.onclick = () => searchPokemonById(pokemon.id);
+                
+                const type1 = pokemon.types[0];
+                const type2 = pokemon.types[1];
+                const type1Color = typeColors[type1] || 'slate-500';
+                const type2Color = type2 ? typeColors[type2] : type1Color;
+                
+                card.innerHTML = `
+                    <div class="text-center">
+                        <div class="w-20 h-20 mx-auto mb-2 flex items-center justify-center">
+                            <img src="${pokemon.sprite}" alt="${pokemon.nameFR}" class="w-full h-full object-contain" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png'">
+                        </div>
+                        <div class="text-xs text-slate-400 mb-1">#${String(pokemon.id).padStart(4, '0')} ${pokemon.generation ? `(G${pokemon.generation})` : ''}</div>
+                        <h3 class="text-sm font-bold text-white mb-2">${pokemon.nameFR}</h3>
+                        <div class="flex justify-center space-x-1 flex-wrap gap-1">
+                            <span class="type-badge px-2 py-1 rounded-full text-white text-xs font-semibold bg-${type1Color}">${typeNamesFR[type1] || type1}</span>
+                            ${type2 ? `<span class="type-badge px-2 py-1 rounded-full text-white text-xs font-semibold bg-${type2Color}">${typeNamesFR[type2] || type2}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            
+            if (filteredPokemon.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center text-slate-400">Aucun Pokémon trouvé</div>';
+            }
+        }
+
+        function filterByType(type) {
+            // Close pokemon details if open
+            const detailsElement = document.getElementById('pokemon-details');
+            const popularElement = document.getElementById('popular-pokemon');
+            const backButton = document.getElementById('back-to-list');
+            
+            if (detailsElement && detailsElement.classList.contains('active')) {
+                detailsElement.classList.remove('active');
+                if (popularElement) popularElement.style.display = 'block';
+                if (backButton) backButton.classList.add('hidden');
+            }
+            
+            currentFilterType = type;
+            const searchInput = document.getElementById('pokemon-search');
+            if (searchInput) searchInput.value = '';
+            
+            if (type === 'all') {
+                filteredPokemon = [...allPokemon];
+            } else {
+                filteredPokemon = allPokemon.filter(p => 
+                    p.types.some(t => t === type)
+                );
+            }
+            
+            renderPokemonGrid();
+            const countElement = document.getElementById('pokemon-count');
+            if (countElement) {
+                countElement.textContent = `${filteredPokemon.length} Pokémon${filteredPokemon.length > 1 ? 's' : ''} trouvé${filteredPokemon.length > 1 ? 's' : ''}`;
+            }
+            
+            // Scroll to top to show filtered results
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function filterPokemonList() {
+            const searchInput = document.getElementById('pokemon-search').value.toLowerCase().trim();
+            
+            if (!searchInput) {
+                filterByType(currentFilterType);
+                return;
+            }
+            
+            filteredPokemon = allPokemon.filter(p => 
+                p.nameFR.toLowerCase().includes(searchInput) ||
+                p.name.toLowerCase().includes(searchInput) ||
+                String(p.id) === searchInput ||
+                p.types.some(t => typeNamesFR[t]?.toLowerCase().includes(searchInput))
+            );
+            
+            renderPokemonGrid();
+            document.getElementById('pokemon-count').textContent = `${filteredPokemon.length} Pokémon${filteredPokemon.length > 1 ? 's' : ''} trouvé${filteredPokemon.length > 1 ? 's' : ''}`;
+        }
+
+        function handleSearch(event) {
+            if (event.key === 'Enter') {
+                searchPokemon();
+            }
+        }
+
+        async function searchPokemon() {
+            const searchInput = document.getElementById('pokemon-search').value.toLowerCase().trim();
+            if (searchInput) {
+                // First, try to find in loaded Pokemon
+                let pokemon = allPokemon.find(p => 
+                    p.nameFR.toLowerCase() === searchInput ||
+                    p.name.toLowerCase() === searchInput ||
+                    String(p.id) === searchInput ||
+                    p.nameFR.toLowerCase().includes(searchInput) ||
+                    p.name.toLowerCase().includes(searchInput)
+                );
+                
+                if (pokemon) {
+                    searchPokemonById(pokemon.id);
+                } else {
+                    // Try to search by ID if it's a number
+                    const id = parseInt(searchInput);
+                    if (!isNaN(id) && id > 0 && id <= 1025) {
+                        searchPokemonById(id);
+                    } else {
+                        // Try to fetch by name from API
+                        try {
+                            const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(searchInput)}`);
+                            if (response.ok) {
+                                const pokemonData = await response.json();
+                                searchPokemonById(pokemonData.id);
+                            } else {
+                                alert(`Pokémon "${searchInput}" non trouvé. Essayez un nom ou un numéro (1-1025).`);
+                            }
+                        } catch (error) {
+                            alert(`Pokémon "${searchInput}" non trouvé. Essayez un nom ou un numéro (1-1025).`);
+                        }
+                    }
+                }
+            }
+        }
+
+        async function searchPokemonById(id) {
+            try {
+                let pokemon = allPokemon.find(p => p.id === id);
+                
+                // If not in cache, fetch it
+                if (!pokemon) {
+                    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+                    const pokemonData = await response.json();
+                    const gen = getGenerationFromId(id);
+                    pokemon = {
+                        id: pokemonData.id,
+                        name: pokemonData.name,
+                        englishName: pokemonData.name, // Store English name explicitly
+                        nameFR: await getFrenchNameFromAPI(id, pokemonData.name),
+                        types: pokemonData.types.map(t => t.type.name),
+                        height: pokemonData.height / 10,
+                        weight: pokemonData.weight / 10,
+                        stats: {
+                            hp: pokemonData.stats[0].base_stat,
+                            attack: pokemonData.stats[1].base_stat,
+                            defense: pokemonData.stats[2].base_stat,
+                            spAttack: pokemonData.stats[3].base_stat,
+                            spDefense: pokemonData.stats[4].base_stat,
+                            speed: pokemonData.stats[5].base_stat
+                        },
+                        abilities: pokemonData.abilities.map(a => a.ability.name),
+                        sprite: pokemonData.sprites.other['official-artwork']?.front_default || pokemonData.sprites.front_default,
+                        data: pokemonData,
+                        generation: gen
+                    };
+                }
+                
+                // Fetch detailed species data for comprehensive lore
+                const speciesResponse = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`);
+                const speciesData = await speciesResponse.json();
+                
+                // Get all French flavor text entries (from different games)
+                const frenchEntries = speciesData.flavor_text_entries
+                    .filter(e => e.language.name === 'fr')
+                    .map(e => ({
+                        text: e.flavor_text.replace(/\f/g, ' ').replace(/\n/g, ' '),
+                        version: e.version.name
+                    }));
+                
+                // Get English entries as fallback
+                const englishEntries = speciesData.flavor_text_entries
+                    .filter(e => e.language.name === 'en' && frenchEntries.length === 0)
+                    .map(e => ({
+                        text: e.flavor_text.replace(/\f/g, ' ').replace(/\n/g, ' '),
+                        version: e.version.name
+                    }));
+                
+                // Get genus (category) in French
+                const frenchGenus = speciesData.genera.find(g => g.language.name === 'fr');
+                const category = frenchGenus ? frenchGenus.genus : speciesData.genera.find(g => g.language.name === 'en')?.genus || 'Pokémon';
+                
+                // Get habitat
+                const habitat = speciesData.habitat ? speciesData.habitat.name : null;
+                
+                // Combine all lore entries, removing duplicates
+                const uniqueLore = [];
+                const seenTexts = new Set();
+                [...frenchEntries, ...englishEntries].forEach(entry => {
+                    if (!seenTexts.has(entry.text)) {
+                        seenTexts.add(entry.text);
+                        uniqueLore.push(entry.text);
+                    }
+                });
+                
+                // Add habitat and category info
+                const loreArray = [];
+                if (category && category !== 'Pokémon') {
+                    loreArray.push(`Catégorie : ${category}`);
+                }
+                if (habitat) {
+                    loreArray.push(`Habitat : ${habitat.charAt(0).toUpperCase() + habitat.slice(1)}`);
+                }
+                if (uniqueLore.length > 0) {
+                    loreArray.push(...uniqueLore.slice(0, 5)); // Max 5 entries
+            } else {
+                    loreArray.push('Description détaillée non disponible pour ce Pokémon.');
+                }
+                
+                // Fetch evolution chain
+                let evolutionChain = null;
+                if (speciesData.evolution_chain && speciesData.evolution_chain.url) {
+                    try {
+                        const evolutionResponse = await fetch(speciesData.evolution_chain.url);
+                        if (evolutionResponse.ok) {
+                            evolutionChain = await evolutionResponse.json();
+                        }
+                    } catch (err) {
+                        console.warn('Erreur lors du chargement de la chaîne d\'évolution:', err);
+                    }
+                }
+                
+                await displayPokemonDetails({
+                    ...pokemon,
+                    lore: loreArray,
+                    category: category,
+                    habitat: habitat,
+                    speciesData: speciesData,
+                    evolutionChain: evolutionChain
+                });
+            } catch (error) {
+                console.error('Erreur:', error);
+                const pokemon = allPokemon.find(p => p.id === id);
+            if (pokemon) {
+                    await displayPokemonDetails({
+                        ...pokemon,
+                        lore: ['Erreur lors du chargement des informations détaillées.']
+                    });
+                }
+            }
+        }
+
+        // Function to recursively parse evolution chain
+        async function parseEvolutionChain(chain, evolutionList = [], parentId = null) {
+            if (!chain) return evolutionList;
+            
+            const speciesName = chain.species.name;
+            const speciesUrl = chain.species.url;
+            const speciesId = parseInt(speciesUrl.split('/').slice(-2, -1)[0]);
+            
+            // Get French name
+            let frenchName = speciesName;
+            try {
+                const speciesResponse = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${speciesId}`);
+                if (speciesResponse.ok) {
+                    const speciesData = await speciesResponse.json();
+                    const frenchNameEntry = speciesData.names?.find(n => n.language.name === 'fr');
+                    if (frenchNameEntry) {
+                        frenchName = frenchNameEntry.name;
+                    }
+                }
+            } catch (err) {
+                console.warn(`Erreur pour le nom français de ${speciesName}:`, err);
+            }
+            
+            // Get Pokemon data for sprite
+            let sprite = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${speciesId}.png`;
+            let types = [];
+            try {
+                const pokemonResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${speciesId}`);
+                if (pokemonResponse.ok) {
+                    const pokemonData = await pokemonResponse.json();
+                    sprite = pokemonData.sprites.other['official-artwork']?.front_default || pokemonData.sprites.front_default || sprite;
+                    types = pokemonData.types.map(t => t.type.name);
+                }
+            } catch (err) {
+                console.warn(`Erreur pour les données de ${speciesName}:`, err);
+            }
+            
+            // Get evolution details
+            const evolutionDetails = [];
+            if (chain.evolution_details && chain.evolution_details.length > 0) {
+                const details = chain.evolution_details[0];
+                
+                if (details.min_level) {
+                    evolutionDetails.push(`Niveau ${details.min_level}`);
+                }
+                
+                if (details.item) {
+                    const itemName = details.item.name;
+                    const itemNamesFR = {
+                        'thunder-stone': 'Pierre Foudre', 'fire-stone': 'Pierre Feu', 'water-stone': 'Pierre Eau',
+                        'leaf-stone': 'Pierre Plante', 'moon-stone': 'Pierre Lune', 'sun-stone': 'Pierre Soleil',
+                        'shiny-stone': 'Pierre Éclat', 'dusk-stone': 'Pierre Nuit', 'dawn-stone': 'Pierre Aube',
+                        'ice-stone': 'Pierre Glace', 'kings-rock': 'Roche Royale', 'metal-coat': 'Peau Métal',
+                        'dragon-scale': 'Écaille Draco', 'up-grade': 'Améliorator', 'razor-claw': 'Griffe Rasoir',
+                        'razor-fang': 'Croc Rasoir', 'protector': 'Protecteur', 'electirizer': 'Électriseur',
+                        'magmarizer': 'Magmariseur', 'dubious-disc': 'CD Douteux', 'reaper-cloth': 'Tissu Fauche',
+                        'prism-scale': 'Écaille Prism', 'oval-stone': 'Pierre Ovale', 'deep-sea-scale': 'Écaille Océan',
+                        'deep-sea-tooth': 'Dent Océan', 'sachet': 'Sachet', 'whipped-dream': 'Chantilly',
+                        'sweet-apple': 'Pomme Sucre', 'tart-apple': 'Pomme Acidulée', 'cracked-pot': 'Pot Fêlé',
+                        'galarica-cuff': 'Manchette Galar', 'galarica-wreath': 'Couronne Galar', 'black-augurite': 'Augurite Noire',
+                        'peaty-block': 'Bloc Tourbe', 'icy-rock': 'Roche Glace', 'mossy-rock': 'Roche Mousse'
+                    };
+                    evolutionDetails.push(itemNamesFR[itemName] || itemName.replace(/-/g, ' '));
+                }
+                
+                if (details.trigger) {
+                    const triggerName = details.trigger.name;
+                    if (triggerName === 'trade') {
+                        evolutionDetails.push('Échange');
+                        if (details.trade_species) {
+                            const tradeSpeciesId = parseInt(details.trade_species.url.split('/').slice(-2, -1)[0]);
+                            try {
+                                const tradeSpeciesResponse = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${tradeSpeciesId}`);
+                                if (tradeSpeciesResponse.ok) {
+                                    const tradeSpeciesData = await tradeSpeciesResponse.json();
+                                    const tradeFrenchName = tradeSpeciesData.names?.find(n => n.language.name === 'fr');
+                                    if (tradeFrenchName) {
+                                        evolutionDetails.push(`avec ${tradeFrenchName.name}`);
+                                    }
+                                }
+                            } catch (err) {
+                                evolutionDetails.push(`avec ${details.trade_species.name}`);
+                            }
+                        }
+                    } else if (triggerName === 'use-item') {
+                        // Already handled above
+                    } else if (triggerName === 'level-up') {
+                        if (!details.min_level) {
+                            evolutionDetails.push('Niveau');
+                        }
+                    }
+                }
+                
+                if (details.happiness !== null && details.happiness !== undefined) {
+                    evolutionDetails.push(`Bonheur ${details.happiness}`);
+                }
+                
+                if (details.time_of_day) {
+                    const timeFR = {
+                        'day': 'Jour', 'night': 'Nuit', 'dusk': 'Crépuscule'
+                    };
+                    evolutionDetails.push(timeFR[details.time_of_day] || details.time_of_day);
+                }
+                
+                if (details.known_move_type) {
+                    const moveTypeFR = typeNamesFR[details.known_move_type.name] || details.known_move_type.name;
+                    evolutionDetails.push(`Attaque ${moveTypeFR}`);
+                }
+                
+                if (details.min_affection !== null && details.min_affection !== undefined) {
+                    evolutionDetails.push(`Affection ${details.min_affection}`);
+                }
+                
+                if (details.relative_physical_stats !== null) {
+                    if (details.relative_physical_stats === 1) {
+                        evolutionDetails.push('Attaque > Défense');
+                    } else if (details.relative_physical_stats === -1) {
+                        evolutionDetails.push('Défense > Attaque');
+            } else {
+                        evolutionDetails.push('Attaque = Défense');
+                    }
+                }
+                
+                if (details.known_move) {
+                    evolutionDetails.push(`Connaît ${details.known_move.name}`);
+                }
+                
+                if (details.location) {
+                    evolutionDetails.push(`Lieu: ${details.location.name}`);
+                }
+                
+                if (details.gender) {
+                    const genderFR = details.gender === 1 ? 'Femelle' : 'Mâle';
+                    evolutionDetails.push(genderFR);
+                }
+                
+                if (details.needs_overworld_rain) {
+                    evolutionDetails.push('Pluie');
+                }
+                
+                if (details.turn_upside_down) {
+                    evolutionDetails.push('Console retournée');
+                }
+            } else if (evolutionList.length === 0) {
+                evolutionDetails.push('Forme de base');
+            }
+            
+            evolutionList.push({
+                id: speciesId,
+                name: frenchName,
+                englishName: speciesName,
+                sprite: sprite,
+                types: types,
+                evolutionDetails: evolutionDetails.length > 0 ? evolutionDetails.join(' / ') : 'Forme de base',
+                parentId: parentId
+            });
+            
+            // Recursively process evolutions (handle multiple branches like Eevee)
+            if (chain.evolves_to && chain.evolves_to.length > 0) {
+                for (const nextEvolution of chain.evolves_to) {
+                    await parseEvolutionChain(nextEvolution, evolutionList, speciesId);
+                }
+            }
+            
+            return evolutionList;
+        }
+
+        let currentPokemonForTCG = null;
+        const tcgCardsCache = new Map(); // Cache pour les cartes TCG
+        const CARDS_CACHE_KEY = 'pokemon_tcg_cache';
+        const MAX_CARDS_DISPLAY = 20; // Limite initiale
+        let allLoadedCards = [];
+        
+        // Pokemon TCG API - using REST API directly (same as estimateur.html)
+
+        // Load cache from localStorage
+        function loadTCGCache() {
+            try {
+                const cached = localStorage.getItem(CARDS_CACHE_KEY);
+                if (cached) {
+                    const cacheData = JSON.parse(cached);
+                    const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+                    Object.entries(cacheData).forEach(([key, value]) => {
+                        if (value.timestamp > oneDayAgo) {
+                            tcgCardsCache.set(key, value.cards);
+                        }
+                    });
+                }
+            } catch (e) {
+                console.warn('Erreur chargement cache TCG:', e);
+            }
+        }
+
+        // Save cache to localStorage
+        function saveTCGCache(pokemonId, cards) {
+            try {
+                const cached = localStorage.getItem(CARDS_CACHE_KEY) || '{}';
+                const cacheData = JSON.parse(cached);
+                cacheData[pokemonId] = {
+                    cards: cards,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(CARDS_CACHE_KEY, JSON.stringify(cacheData));
+                tcgCardsCache.set(pokemonId, cards);
+            } catch (e) {
+                console.warn('Erreur sauvegarde cache TCG:', e);
+            }
+        }
+
+        async function loadTCGCardsForCurrentPokemon() {
+            if (currentPokemonForTCG) {
+                await loadTCGCards(currentPokemonForTCG);
+            }
+        }
+
+        async function loadTCGCards(pokemon, showAll = false) {
+            currentPokemonForTCG = pokemon;
+            const container = document.getElementById('tcg-cards-container');
+            const cacheKey = String(pokemon.id);
+            
+            // Check cache first
+            if (tcgCardsCache.has(cacheKey) && !showAll) {
+                const cachedCards = tcgCardsCache.get(cacheKey);
+                displayTCGCards(cachedCards, showAll);
+                return;
+            }
+            
+            // Show skeleton loader (faster visual feedback)
+            container.innerHTML = `
+                <div class="col-span-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    ${Array.from({length: 10}, () => `
+                        <div class="pokedex-card rounded-xl p-3 animate-pulse">
+                            <div class="w-full aspect-[245/342] bg-slate-700 rounded-lg"></div>
+                            <div class="h-4 bg-slate-600 rounded mt-2"></div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            // Start loading immediately (don't wait)
+            loadTCGCardsAsync(pokemon, showAll);
+        }
+
+        async function loadTCGCardsAsync(pokemon, showAll = false) {
+            const container = document.getElementById('tcg-cards-container');
+            const cacheKey = String(pokemon.id);
+            
+            // Vérifier d'abord le cache
+            if (tcgCardsCache.has(cacheKey)) {
+                const cachedCards = tcgCardsCache.get(cacheKey);
+                if (cachedCards && cachedCards.length > 0) {
+                    displayTCGCards(cachedCards, showAll);
+                    return;
+                }
+            }
+            
+            // Si pas de cache, afficher un message informatif
+            // L'API pokemontcg.io a des restrictions CORS depuis localhost
+            container.innerHTML = `
+                <div class="col-span-full text-center text-slate-400 py-8">
+                    <i class="fas fa-cards-blank text-4xl mb-4 opacity-50"></i>
+                    <p class="text-lg font-semibold mb-2">Cartes TCG non disponibles en local</p>
+                    <p class="text-sm mb-2">Les cartes TCG ne peuvent pas être chargées depuis localhost à cause des restrictions CORS de l'API.</p>
+                    <p class="text-xs text-slate-500">Les cartes seront disponibles une fois le site déployé en ligne.</p>
+                </div>
+            `;
+        }
+        
+        // Get specific anecdotes for each Pokemon
+        function getPokemonAnecdotes(pokemon) {
+            const anecdotes = [];
+            const id = pokemon.id;
+            const nameFR = pokemon.nameFR || pokemon.name;
+            const englishName = pokemon.englishName || pokemon.name;
+            
+            // Specific anecdotes for ALL Pokemon - Complete Gen 1 database (1-151)
+            const specificAnecdotes = {
+                // Gen 1 Starters
+                1: ['Bulbizarre est inspiré d\'un dinosaure et d\'un bulbe d\'oignon', 'Son nom vient de "bulb" (bulbe) et "saur" (dinosaure)', 'C\'est le premier Pokémon du Pokédex national', 'Le bulbe sur son dos grandit en absorbant la lumière du soleil'],
+                2: ['Herbizarre est l\'évolution de Bulbizarre', 'Le bulbe sur son dos commence à fleurir', 'Il dégage une odeur sucrée quand il fleurit', 'Au niveau 16, il évolue généralement'],
+                3: ['Florizarre peut contrôler la nature autour de lui', 'Il sent très bon quand il fleurit complètement', 'Il peut faire pousser des plantes instantanément', 'Il est le seul starter à posséder le type Poison'],
+                4: ['Salamèche signifie "salamandre" en japonais', 'Sa queue brûle même sous la pluie', 'Dans l\'anime, le Salamèche de Sacha était abandonné et pleurait', 'Si la flamme s\'éteint, Salamèche meurt', 'A été le premier Pokémon créé par Satoshi Tajiri'],
+                5: ['Reptincel est l\'évolution de Salamèche', 'Il devient plus agressif en évoluant', 'Sa flamme brûle plus intensément', 'Il aime les défis'],
+                6: ['Dracaufeu peut faire fondre la roche avec son souffle', 'Il est très fier et puissant', 'Il peut voler malgré son poids', 'Il ne combat jamais un ennemi plus faible', 'Figurait sur la boîte de Pokémon Rouge Feu'],
+                7: ['Carapuce est inspiré d\'une tortue', 'Il peut se rétracter dans sa carapace', 'Il pleure quand il est triste', 'C\'est le starter le plus défensif'],
+                8: ['Carabaffe est l\'évolution de Carapuce', 'Sa carapace devient plus dure', 'Il devient plus confiant', 'Il peut projeter de l\'eau'],
+                9: ['Tortank peut projeter de l\'eau à plus de 50 mètres', 'Il est très lourd mais rapide dans l\'eau', 'Il a deux canons sur sa carapace', 'Il peut envoyer des balles d\'eau avec précision'],
+                // Gen 1 Bug Line
+                10: ['Chenipan se cache dans les feuilles', 'Il mange constamment', 'Il grandit très vite', 'Il évolue au niveau 7'],
+                11: ['Chrysacier se protège dans sa coque', 'Il ne peut pas se déplacer', 'Il prépare son évolution', 'Il évolue au niveau 10'],
+                12: ['Papilusion peut voler à grande vitesse', 'Il recueille le nectar des fleurs', 'Très élégant en vol', 'Il a des ailes colorées'],
+                13: ['Aspicot utilise son dard venimeux', 'Très agressif', 'Vit dans les forêts', 'Il évolue au niveau 7'],
+                14: ['Coconfort se protège dans sa coque', 'Prépare son évolution', 'Très résistant', 'Il évolue au niveau 10'],
+                15: ['Dardargnan peut lancer des dards empoisonnés', 'Très rapide', 'Protège son nid', 'Il est très agressif'],
+                // Gen 1 Flying
+                16: ['Roucool vit en groupe', 'Très commun', 'Aime les villes', 'Souvent utilisé dans les tutoriels'],
+                17: ['Roucoups devient plus territorial', 'Protège son territoire', 'Plus agressif', 'Il évolue au niveau 18'],
+                18: ['Roucarnage peut voler à 300 km/h', 'Très rapide', 'Chasse en groupe', 'Il a une vue perçante'],
+                19: ['Rattata très prolifique', 'Vit partout', 'Se reproduit rapidement', 'Peut être rencontré dès le niveau 2'],
+                20: ['Rattatac plus agressif que Rattata', 'Mord tout ce qui bouge', 'Très territorial', 'Il évolue au niveau 20'],
+                21: ['Piafabec est très agressif', 'Attaque en groupe', 'Très rapide', 'Il évolue au niveau 20'],
+                22: ['Rapasdepic est plus puissant que Piafabec', 'Peut percer la roche', 'Très territorial', 'Il a un bec acéré'],
+                // Gen 1 Poison
+                23: ['Abo est très venimeux', 'Vit dans les herbes hautes', 'Très dangereux', 'Il évolue au niveau 22'],
+                24: ['Arbok est l\'évolution d\'Abo', 'Très venimeux', 'Peut hypnotiser ses proies', 'Il a un motif sur son ventre'],
+                29: ['Nidoran♀ est la forme femelle', 'Très défensive', 'Peut utiliser des attaques venimeuses', 'Il évolue au niveau 16'],
+                30: ['Nidorina est l\'évolution de Nidoran♀', 'Plus puissante', 'Protège ses petits', 'Il évolue avec une Pierre Lune'],
+                31: ['Nidoqueen est l\'évolution finale', 'Très protectrice', 'Peut écraser ses ennemis', 'Il a une carapace dure'],
+                32: ['Nidoran♂ est la forme mâle', 'Très agressif', 'A des cornes pointues', 'Il évolue au niveau 16'],
+                33: ['Nidorino est l\'évolution de Nidoran♂', 'Plus agressif', 'A des cornes plus longues', 'Il évolue avec une Pierre Lune'],
+                34: ['Nidoking est l\'évolution finale', 'Très puissant', 'Peut percer la roche', 'Il est très agressif'],
+                // Gen 1 Electric
+                25: ['Pikachu est la mascotte officielle de Pokémon', 'Son nom vient de "pika" (étincelle) et "chu" (souris)', 'Le Pikachu de Sacha refuse d\'évoluer en Raichu', 'Il peut générer 100 000 volts d\'électricité', 'Dans Pokémon Go, il apparaît si vous refusez les trois starters', 'Inspiré d\'un écureuil'],
+                26: ['Raichu est l\'évolution de Pikachu', 'Il est plus puissant mais moins populaire', 'Il peut électrocuter un éléphant', 'Il a une queue en forme d\'éclair'],
+                100: ['Voltorbe ressemble à une Poké Ball', 'Très explosif', 'Peut s\'autodétruire', 'Il évolue au niveau 30'],
+                101: ['Électrode est l\'évolution de Voltorbe', 'Très explosif', 'Peut s\'autodétruire', 'Il est très rapide'],
+                // Gen 1 Ground
+                27: ['Sabelette se cache dans le sable', 'Il vit dans les déserts', 'Il se roule en boule pour se protéger', 'Il évolue au niveau 22'],
+                28: ['Sablaireau est plus agressif que Sabelette', 'Il peut creuser rapidement', 'Très territorial', 'Il a des griffes acérées'],
+                50: ['Taupiqueur vit sous terre', 'Peut creuser rapidement', 'Très rapide', 'Il évolue au niveau 26'],
+                51: ['Triopikeur est l\'évolution de Taupiqueur', 'Peut creuser très profondément', 'Très rapide', 'Il a trois têtes'],
+                74: ['Racaillou est fait de roche', 'Vit dans les montagnes', 'Très résistant', 'Il évolue au niveau 25'],
+                75: ['Gravalanch est l\'évolution de Racaillou', 'Plus gros', 'Très résistant', 'Il évolue par échange'],
+                76: ['Grolem est l\'évolution finale', 'Très lourd', 'Peut écraser ses ennemis', 'Il est très résistant'],
+                // Gen 1 Normal
+                35: ['Mélofée est très doux', 'Aime danser', 'Très populaire', 'Il évolue au niveau 20'],
+                36: ['Mélodelfe est l\'évolution de Mélofée', 'Très puissant', 'Peut utiliser des attaques magiques', 'Il est très rare'],
+                37: ['Goupix a six queues', 'Très intelligent', 'Peut contrôler le feu', 'Il évolue avec une Pierre Feu'],
+                38: ['Feunard est l\'évolution de Goupix', 'A neuf queues', 'Très puissant', 'Il peut créer des illusions'],
+                39: ['Rondoudou est inspiré d\'un ballon', 'Il chante une berceuse qui endort ses ennemis', 'Son nom vient de "rond" et "doux"', 'Dans l\'anime, il marque le visage de ses victimes endormies'],
+                40: ['Grodoudou est l\'évolution de Rondoudou', 'Il peut chanter plus fort', 'Il est très lourd', 'Il peut endormir plusieurs personnes'],
+                41: ['Nosferapti est un chauve-souris', 'Vit dans les grottes', 'Très rapide', 'Il évolue au niveau 22'],
+                42: ['Nosferalto est l\'évolution de Nosferapti', 'Plus puissant', 'Peut sucer le sang', 'Il est très rapide'],
+                43: ['Mystherbe est une plante', 'Peut émettre une odeur nauséabonde', 'Très résistant', 'Il évolue au niveau 21'],
+                44: ['Ortide est l\'évolution de Mystherbe', 'Plus puissant', 'Peut empoisonner', 'Il évolue avec une Pierre Plante'],
+                45: ['Rafflesia est l\'évolution finale', 'Très venimeux', 'Peut endormir', 'Il a une grande fleur'],
+                46: ['Paras est un champignon', 'Vit sur le dos d\'un insecte', 'Très résistant', 'Il évolue au niveau 24'],
+                47: ['Parasect est l\'évolution de Paras', 'Le champignon a pris le contrôle', 'Très dangereux', 'Il peut répandre des spores'],
+                48: ['Mimitoss est un papillon de nuit', 'Peut endormir', 'Très rapide', 'Il évolue au niveau 31'],
+                49: ['Aéromite est l\'évolution de Mimitoss', 'Peut voler silencieusement', 'Très rapide', 'Il peut empoisonner'],
+                52: ['Miaouss est le seul Pokémon qui peut parler', 'Il marche sur deux pattes', 'Il est très intelligent', 'Il a appris à parler pour séduire une Miaouss femelle', 'Il a rejoint la Team Rocket après avoir été rejeté'],
+                53: ['Persian est l\'évolution de Miaouss', 'Il est très élégant', 'Il a un bijou sur le front', 'Il est très rapide'],
+                56: ['Férosinge est très agressif', 'Attaque avec ses poings', 'Très rapide', 'Il évolue au niveau 28'],
+                57: ['Colossinge est l\'évolution de Férosinge', 'Très puissant', 'Peut écraser ses ennemis', 'Il est très agressif'],
+                58: ['Caninos est très loyal', 'Peut sentir les émotions', 'Très intelligent', 'Il évolue au niveau 25'],
+                59: ['Arcanin est l\'évolution de Caninos', 'Très noble', 'Peut courir très vite', 'Il est très puissant'],
+                60: ['Ptitard est une têtard', 'Très rapide dans l\'eau', 'Peut survivre hors de l\'eau', 'Il évolue au niveau 25'],
+                61: ['Têtarte est l\'évolution de Ptitard', 'Plus puissant', 'Peut utiliser des attaques psychiques', 'Il évolue au niveau 36'],
+                62: ['Tartard est l\'évolution finale', 'Très puissant', 'Peut utiliser des arts martiaux', 'Il est très résistant'],
+                66: ['Machoc est un combattant', 'S\'entraîne constamment', 'Très fort', 'Il évolue au niveau 28'],
+                67: ['Machopeur est l\'évolution de Machoc', 'Plus puissant', 'Peut soulever des rochers', 'Il évolue par échange'],
+                68: ['Mackogneur est l\'évolution finale', 'Très puissant', 'Peut écraser la roche', 'Il a quatre bras'],
+                69: ['Chétiflor est une plante', 'Peut utiliser des lianes', 'Très résistant', 'Il évolue au niveau 21'],
+                70: ['Boustiflor est l\'évolution de Chétiflor', 'Plus puissant', 'Peut empoisonner', 'Il évolue au niveau 36'],
+                71: ['Empiflor est l\'évolution finale', 'Très dangereux', 'Peut avaler ses proies', 'Il a une grande fleur'],
+                72: ['Tentacool vit dans l\'eau', 'Peut empoisonner', 'Très résistant', 'Il évolue au niveau 30'],
+                73: ['Tentacruel est l\'évolution de Tentacool', 'Plus puissant', 'A 80 tentacules', 'Il est très dangereux'],
+                77: ['Ponyta peut courir très vite', 'Ses sabots sont enflammés', 'Très rapide', 'Il évolue au niveau 40'],
+                78: ['Galopa est l\'évolution de Ponyta', 'Peut courir à 240 km/h', 'Très rapide', 'Il a une crinière de feu'],
+                81: ['Magnéti est un aimant', 'Peut générer des champs magnétiques', 'Très résistant', 'Il évolue au niveau 30'],
+                82: ['Magnéton est l\'évolution de Magnéti', 'Trois Magnéti fusionnés', 'Très puissant', 'Il peut perturber les appareils'],
+                83: ['Canarticho porte un poireau', 'Très intelligent', 'Peut utiliser son poireau comme épée', 'Il est inspiré d\'une expression japonaise'],
+                84: ['Doduo a deux têtes', 'Très rapide', 'Peut courir très vite', 'Il évolue au niveau 31'],
+                85: ['Dodrio est l\'évolution de Doduo', 'A trois têtes', 'Très rapide', 'Il peut courir à 60 km/h'],
+                86: ['Otaria est un phoque', 'Très intelligent', 'Peut utiliser des attaques de glace', 'Il évolue au niveau 34'],
+                87: ['Lamantine est l\'évolution d\'Otaria', 'Plus puissant', 'Peut contrôler la glace', 'Il a une fourrure épaisse'],
+                88: ['Tadmorv est fait de boue', 'Très toxique', 'Peut empoisonner', 'Il évolue au niveau 38'],
+                89: ['Grotadmorv est l\'évolution de Tadmorv', 'Plus toxique', 'Peut fondre la roche', 'Il est très dangereux'],
+                90: ['Kokiyas est un coquillage', 'Très résistant', 'Peut utiliser des attaques de glace', 'Il évolue par échange'],
+                91: ['Crustabri est l\'évolution de Kokiyas', 'Très résistant', 'Peut percer la roche', 'Il a une carapace dure'],
+                92: ['Fantominus est un fantôme', 'Peut traverser les murs', 'Très rapide', 'Il évolue au niveau 25'],
+                93: ['Spectrier est l\'évolution de Fantominus', 'Plus puissant', 'Peut hypnotiser', 'Il évolue par échange'],
+                94: ['Ectoplasma est le Pokémon fantôme le plus puissant de la Gen 1', 'Il peut traverser les murs', 'Son nom vient de "ectoplasme"', 'Il est très malveillant'],
+                95: ['Onix est le plus long Pokémon', 'Il peut mesurer jusqu\'à 8,8 mètres', 'Il vit dans les grottes', 'Il peut creuser rapidement'],
+                96: ['Soporifik est inspiré du tapir', 'Dans le folklore japonais, il dévorerait les cauchemars', 'Symbolise les beaux rêves', 'Les Japonais gardent des images de tapir pour éloigner les cauchemars'],
+                97: ['Hypnomade est plus puissant que Soporifik', 'Il peut contrôler les rêves', 'Très intelligent', 'Il utilise un pendule'],
+                98: ['Krabby vit sur les plages', 'Très agressif', 'Peut pincer très fort', 'Il évolue au niveau 28'],
+                99: ['Krabboss est l\'évolution de Krabby', 'Plus puissant', 'Peut écraser la roche', 'Il a une pince géante'],
+                102: ['Noeunoeuf ressemble à un œuf', 'Peut utiliser des attaques psychiques', 'Très résistant', 'Il évolue avec une Pierre Plante'],
+                103: ['Noadkoko est l\'évolution de Noeunoeuf', 'A trois têtes', 'Très puissant', 'Il peut utiliser des attaques psychiques'],
+                104: ['Osselait est un os', 'Peut utiliser son os comme arme', 'Très résistant', 'Il évolue au niveau 28'],
+                105: ['Ossatueur est l\'évolution d\'Osselait', 'Plus puissant', 'Peut utiliser son os comme boomerang', 'Il est très agressif'],
+                106: ['Kicklee est un expert en arts martiaux', 'Il peut donner 1000 coups de pied par seconde', 'Il s\'entraîne constamment', 'Il est le rival de Tygnon'],
+                107: ['Tygnon est un expert en boxe', 'Il peut donner 1000 coups de poing par seconde', 'Il est le rival de Kicklee', 'Il s\'entraîne constamment'],
+                108: ['Excelangue a une langue très longue', 'Peut lécher ses ennemis', 'Très résistant', 'Il peut utiliser sa langue comme arme'],
+                109: ['Smogo est fait de gaz', 'Très toxique', 'Peut empoisonner', 'Il évolue au niveau 35'],
+                110: ['Smogogo est l\'évolution de Smogo', 'Plus toxique', 'Peut créer du smog', 'Il est très dangereux'],
+                111: ['Rhinocorne a une corne', 'Très résistant', 'Peut percer la roche', 'Il évolue au niveau 42'],
+                112: ['Rhinoferos est l\'évolution de Rhinocorne', 'Peut percer la roche', 'Très fort', 'Vit dans les montagnes', 'Le tout premier Pokémon créé par Satoshi Tajiri'],
+                113: ['Leveinard pond des œufs', 'Très rare', 'Peut guérir', 'Il est très précieux'],
+                114: ['Saquedeneu est une plante', 'Peut utiliser des lianes', 'Très résistant', 'Il peut se régénérer'],
+                115: ['Kangourex a une poche', 'Protège ses petits', 'Très puissant', 'Il est très protecteur'],
+                116: ['Hypotrempe est un hippocampe', 'Vit dans l\'eau', 'Très rapide', 'Il évolue au niveau 32'],
+                117: ['Hypocéan est l\'évolution d\'Hypotrempe', 'Plus puissant', 'Peut utiliser des jets d\'eau', 'Il est très rapide'],
+                118: ['Poissirène est un poisson', 'Très rapide', 'Peut sauter hors de l\'eau', 'Il évolue au niveau 33'],
+                119: ['Poissoroy est l\'évolution de Poissirène', 'Plus puissant', 'Peut utiliser sa corne', 'Il est très agressif'],
+                120: ['Stari est une étoile de mer', 'Peut régénérer ses bras', 'Très résistant', 'Il évolue avec une Pierre Eau'],
+                121: ['Staross est l\'évolution de Stari', 'Plus puissant', 'Peut utiliser des attaques psychiques', 'Il a un noyau brillant'],
+                122: ['M. Mime est un mime', 'Peut créer des barrières invisibles', 'Très intelligent', 'Il est appelé "Barrierd" au Japon'],
+                123: ['Insécateur est un insecte', 'Très rapide', 'Peut voler', 'Il évolue au niveau 30'],
+                124: ['Lippoutou est un pingouin', 'Peut utiliser des attaques de glace', 'Très intelligent', 'Il évolue au niveau 30'],
+                125: ['Élektek peut générer de l\'électricité', 'Très puissant', 'Peut électrocuter', 'Il évolue par échange'],
+                126: ['Magmar peut contrôler le feu', 'Très puissant', 'Peut faire fondre la roche', 'Il évolue par échange'],
+                127: ['Scarabrute est un scarabée', 'Très puissant', 'Peut soulever 100 fois son poids', 'Il est très fort'],
+                128: ['Tauros est un taureau', 'Très agressif', 'Peut charger', 'Il est exclusif à la version Rouge'],
+                129: ['Magicarpe est considéré comme le Pokémon le plus faible', 'Il ne connaît que l\'attaque "Trempette"', 'Il évolue en Léviator, l\'un des plus puissants', 'Il saute souvent hors de l\'eau'],
+                130: ['Léviator est inspiré du dragon chinois', 'Il peut déclencher des tempêtes en colère', 'Il est l\'évolution de Magicarpe', 'Il peut détruire des villes entières'],
+                131: ['Lokhlass est très gentil', 'Il porte les gens sur son dos', 'Il aime nager', 'Il est inspiré d\'un plésiosaure'],
+                132: ['Métamorph peut se transformer', 'Peut copier n\'importe quel Pokémon', 'Très unique', 'Il partage le même poids que Mew'],
+                133: ['Évoli peut évoluer en 8 formes différentes', 'C\'est le seul Pokémon avec autant d\'évolutions', 'Son nom vient de "évolution"', 'Il est très adaptable'],
+                134: ['Aquali est l\'évolution Eau d\'Évoli', 'Il peut contrôler l\'eau', 'Il a une nageoire sur la tête', 'Il évolue avec une Pierre Eau'],
+                135: ['Voltali est l\'évolution Électrik d\'Évoli', 'Il peut générer 10 000 volts', 'Il a une fourrure qui stocke l\'électricité', 'Il évolue avec une Pierre Foudre'],
+                136: ['Pyroli est l\'évolution Feu d\'Évoli', 'Il peut contrôler le feu', 'Il a une flamme sur la queue', 'Il évolue avec une Pierre Feu'],
+                137: ['Porygon est un Pokémon numérique', 'Créé par ordinateur', 'Très unique', 'Il a causé des crises d\'épilepsie dans l\'anime'],
+                138: ['Amonita est un fossile', 'Peut être ressuscité', 'Très rare', 'Il évolue au niveau 40'],
+                139: ['Amonistar est l\'évolution d\'Amonita', 'Plus puissant', 'Peut utiliser des attaques de roche', 'Il est très résistant'],
+                140: ['Kabuto est un fossile', 'Peut être ressuscité', 'Très rare', 'Il évolue au niveau 40'],
+                141: ['Kabutops est l\'évolution de Kabuto', 'Plus puissant', 'Peut trancher', 'Il a des griffes acérées'],
+                142: ['Ptéra est un fossile', 'Peut voler', 'Très rapide', 'Il peut être ressuscité'],
+                143: ['Ronflex dort 20 heures par jour', 'Il ne se réveille que pour manger', 'Il est inspiré d\'un ours', 'Il peut manger 400 kg de nourriture par jour'],
+                144: ['Artikodin peut provoquer des blizzards', 'Il gèle l\'humidité de l\'air', 'Légendaire de Kanto', 'Son nom vient de "artique" et "odin"'],
+                145: ['Électhor vit dans les nuages d\'orage', 'Il contrôle la foudre', 'Légendaire de Kanto', 'Il peut créer des orages'],
+                146: ['Sulfura sème des braises à chaque battement d\'ailes', 'Sa beauté fait fondre les cœurs', 'Légendaire de Kanto', 'Il vit dans les volcans'],
+                147: ['Minidraco est un bébé dragon', 'Très rare', 'Peut évoluer', 'Il évolue au niveau 30'],
+                148: ['Draco est l\'évolution de Minidraco', 'Plus puissant', 'Peut voler', 'Il évolue au niveau 55'],
+                149: ['Dracolosse peut voler à 2000 km/h', 'Très gentil malgré son apparence', 'Peut faire le tour du monde en 16h', 'Il est l\'évolution finale de Minidraco'],
+                150: ['Mewtwo est un clone génétique de Mew', 'Créé par l\'équipe Rocket', 'C\'est l\'un des Pokémon les plus puissants', 'Il apparaît dans le premier film Pokémon'],
+                151: ['Mew est l\'ancêtre de tous les Pokémon', 'Il peut apprendre toutes les attaques', 'Extrêmement rare', 'Il peut se rendre invisible', 'Il possède l\'ADN de chaque espèce']
+            };
+            
+            // Get specific anecdotes if available (prioritize these)
+            if (specificAnecdotes[id]) {
+                return specificAnecdotes[id].slice(0, 4); // Return only specific anecdotes
+            }
+            
+            // For Pokemon without specific anecdotes, generate interesting ones based on characteristics
+            const pokemonStats = pokemon.stats;
+            const totalStats = pokemonStats.hp + pokemonStats.attack + pokemonStats.defense + pokemonStats.spAttack + pokemonStats.spDefense + pokemonStats.speed;
+            const maxStatValue = Math.max(pokemonStats.hp, pokemonStats.attack, pokemonStats.defense, pokemonStats.spAttack, pokemonStats.spDefense, pokemonStats.speed);
+            
+            // Stat-based interesting facts (only if exceptional)
+            if (pokemonStats.speed === maxStatValue && pokemonStats.speed >= 130) {
+                anecdotes.push(`${nameFR} est l'un des Pokémon les plus rapides, avec ${pokemonStats.speed} en vitesse`);
+            } else if (pokemonStats.attack === maxStatValue && pokemonStats.attack >= 130) {
+                anecdotes.push(`${nameFR} possède une force physique exceptionnelle de ${pokemonStats.attack}`);
+            } else if (pokemonStats.defense === maxStatValue && pokemonStats.defense >= 130) {
+                anecdotes.push(`${nameFR} a une défense remarquable de ${pokemonStats.defense}`);
+            } else if (pokemonStats.hp === maxStatValue && pokemonStats.hp >= 150) {
+                anecdotes.push(`${nameFR} est extrêmement résistant avec ${pokemonStats.hp} PV`);
+            }
+            
+            // Total stats (if very high or very low)
+            if (totalStats >= 600) {
+                anecdotes.push(`${nameFR} a des statistiques totales exceptionnelles (${totalStats})`);
+            } else if (totalStats <= 200) {
+                anecdotes.push(`${nameFR} a des statistiques totales modestes (${totalStats})`);
+            }
+            
+            // Type combinations interesting facts
+            if (pokemon.types.length === 2) {
+                const type1 = typeNamesFR[pokemon.types[0]] || pokemon.types[0];
+                const type2 = typeNamesFR[pokemon.types[1]] || pokemon.types[1];
+                const rareCombos = [
+                    ['Électrik', 'Vol'], ['Feu', 'Vol'], ['Eau', 'Vol'],
+                    ['Dragon', 'Vol'], ['Spectre', 'Vol'], ['Acier', 'Vol']
+                ];
+                const combo = [type1, type2].sort();
+                if (rareCombos.some(rc => rc[0] === combo[0] && rc[1] === combo[1])) {
+                    anecdotes.push(`${nameFR} a une combinaison de types rare : ${type1} / ${type2}`);
+                }
+            }
+            
+            // Type-specific interesting facts
+            if (pokemon.types.includes('dragon') && !pokemon.types.includes('vol')) {
+                anecdotes.push(`${nameFR} est l'un des rares Pokémon de type Dragon`);
+            }
+            if (pokemon.types.includes('ghost') && pokemon.types.includes('poison')) {
+                anecdotes.push(`${nameFR} a une combinaison de types unique : Spectre / Poison`);
+            }
+            if (pokemon.types.includes('steel') && pokemon.types.includes('psychic')) {
+                anecdotes.push(`${nameFR} combine les types Acier et Psy, une combinaison rare`);
+            }
+            
+            // Evolution-based interesting facts
+            if (pokemon.speciesData) {
+                const hasPreEvolution = pokemon.speciesData.evolves_from_species !== null;
+                const canEvolve = pokemon.speciesData.evolution_chain && 
+                    pokemon.speciesData.evolution_chain.chain &&
+                    pokemon.speciesData.evolution_chain.chain.evolves_to &&
+                    pokemon.speciesData.evolution_chain.chain.evolves_to.length > 0;
+                
+                if (!hasPreEvolution && canEvolve) {
+                    const evolutionCount = pokemon.speciesData.evolution_chain.chain.evolves_to.length;
+                    if (evolutionCount > 2) {
+                        anecdotes.push(`${nameFR} peut évoluer en ${evolutionCount} formes différentes`);
+                    }
+                } else if (hasPreEvolution && !canEvolve) {
+                    anecdotes.push(`${nameFR} est une forme évoluée finale`);
+                }
+            }
+            
+            // Generation-based facts
+            if (pokemon.generation === 1 && id <= 151) {
+                anecdotes.push(`${nameFR} fait partie des 151 Pokémon originaux de 1996`);
+            } else if (pokemon.generation === 2 && id >= 152 && id <= 251) {
+                anecdotes.push(`${nameFR} a été introduit dans la deuxième génération (1999)`);
+            } else if (pokemon.generation === 3 && id >= 252 && id <= 386) {
+                anecdotes.push(`${nameFR} a été introduit dans la troisième génération (2002)`);
+            }
+            
+            // Weight/Height interesting facts (only if extreme)
+            if (pokemon.weight >= 300) {
+                anecdotes.push(`${nameFR} est l'un des Pokémon les plus lourds, pesant ${pokemon.weight}kg`);
+            } else if (pokemon.weight < 0.3) {
+                anecdotes.push(`${nameFR} est l'un des Pokémon les plus légers, pesant seulement ${pokemon.weight}kg`);
+            }
+            
+            if (pokemon.height >= 4) {
+                anecdotes.push(`${nameFR} est l'un des Pokémon les plus grands, mesurant ${pokemon.height}m`);
+            } else if (pokemon.height < 0.2) {
+                anecdotes.push(`${nameFR} est l'un des Pokémon les plus petits, mesurant seulement ${pokemon.height}m`);
+            }
+            
+            // Abilities-based facts (if interesting)
+            if (pokemon.abilities && pokemon.abilities.length > 0) {
+                const ability = pokemon.abilities[0].replace(/-/g, ' ');
+                const interestingAbilities = ['wonder guard', 'huge power', 'pure power', 'speed boost', 'moody'];
+                if (interestingAbilities.some(ia => ability.toLowerCase().includes(ia))) {
+                    anecdotes.push(`${nameFR} possède le talent "${ability}", l'un des plus puissants`);
+                }
+            }
+            
+            // Remove duplicates and return
+            return [...new Set(anecdotes)].slice(0, 4);
+        }
+        
+        // Convert Pokemon TCG API set code to Pokécardex set code
+        function getPokecardexSetCode(apiSetCode) {
+            if (!apiSetCode) return null;
+            
+            // Mapping des codes de sets de l'API vers Pokécardex
+            const setCodeMap = {
+                // Base sets
+                'base1': 'base1',
+                'base2': 'base2',
+                'base3': 'base3',
+                'base4': 'base4',
+                'base5': 'base5',
+                // Gym
+                'gym1': 'gym1',
+                'gym2': 'gym2',
+                // Neo
+                'neo1': 'neo1',
+                'neo2': 'neo2',
+                'neo3': 'neo3',
+                'neo4': 'neo4',
+                // Sword & Shield
+                'swsh1': 'swsh1',
+                'swsh2': 'swsh2',
+                'swsh3': 'swsh3',
+                'swsh4': 'swsh4',
+                'swsh5': 'swsh5',
+                'swsh6': 'swsh6',
+                'swsh7': 'swsh7',
+                'swsh8': 'swsh8',
+                'swsh9': 'swsh9',
+                'swsh10': 'swsh10',
+                'swsh11': 'swsh11',
+                'swsh12': 'swsh12',
+                'swsh35': 'swsh9pt5', // Celebrations
+                'swsh45': 'swsh12pt5', // Pokémon GO
+                'swsh9pt5': 'swsh9pt5',
+                'swsh12pt5': 'swsh12pt5',
+                'swsh11pt5': 'swsh11pt5',
+                // Scarlet & Violet
+                'sv1': 'sv1',
+                'sv2': 'sv2',
+                'sv3': 'sv3',
+                'sv3pt5': 'sv3pt5',
+                'sv4': 'sv4',
+                'sv4pt5': 'sv4pt5',
+                'sv5': 'sv5',
+                'sv5pt5': 'sv5pt5',
+                // Autres sets récents
+                'sm1': 'sm1',
+                'sm2': 'sm2',
+                'sm3': 'sm3',
+                'sm4': 'sm4',
+                'sm5': 'sm5',
+                'sm6': 'sm6',
+                'sm7': 'sm7',
+                'sm8': 'sm8',
+                'sm9': 'sm9',
+                'sm10': 'sm10',
+                'sm11': 'sm11',
+                'sm12': 'sm12',
+                'xy1': 'xy1',
+                'xy2': 'xy2',
+                'xy3': 'xy3',
+                'xy4': 'xy4',
+                'xy5': 'xy5',
+                'xy6': 'xy6',
+                'xy7': 'xy7',
+                'xy8': 'xy8',
+                'xy9': 'xy9',
+                'xy10': 'xy10',
+                'xy11': 'xy11',
+                'xy12': 'xy12'
+            };
+            
+            return setCodeMap[apiSetCode.toLowerCase()] || apiSetCode.toLowerCase();
+        }
+        
+        // Generate Pokécardex URL from set code and card number
+        function getPokecardexUrl(apiSetCode, cardNumber) {
+            if (!apiSetCode || !cardNumber) return null;
+            
+            const pokecardexSetCode = getPokecardexSetCode(apiSetCode);
+            if (!pokecardexSetCode) return null;
+            
+            // Format: https://pokecardex.b-cdn.net/assets/images/sets/{SET_CODE}/{QUALITY}/{CARD_NUMBER}.jpg?class={QUALITY}
+            // Utiliser HD pour haute qualité
+            const paddedNumber = String(cardNumber).padStart(3, '0');
+            return `https://pokecardex.b-cdn.net/assets/images/sets/${pokecardexSetCode.toUpperCase()}/HD/${paddedNumber}.jpg?class=hd`;
+        }
+
+        function displayTCGCards(cards, showAll = false) {
+            const container = document.getElementById('tcg-cards-container');
+            
+            if (cards.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center text-slate-400 py-8">
+                        <i class="fas fa-cards-blank text-4xl mb-4 opacity-50"></i>
+                        <p class="text-lg font-semibold mb-2">Aucune carte TCG trouvée</p>
+                        <p class="text-sm">Aucune carte du Jeu de Cartes à Collectionner n'a été trouvée pour ce Pokémon.</p>
+                        <p class="text-xs mt-2 text-slate-500">Ce Pokémon n'apparaît peut-être pas encore dans le JCC Pokémon.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Limit initial display for performance
+            const cardsToShow = showAll ? cards : cards.slice(0, MAX_CARDS_DISPLAY);
+            const hasMore = cards.length > MAX_CARDS_DISPLAY && !showAll;
+            
+            // Display cards progressively with optimized image loading
+            let html = '';
+            cardsToShow.forEach((card, index) => {
+                // Use small image for faster loading, preload large image
+                const smallImage = card.image || card.imageLarge;
+                const largeImage = card.imageLarge || card.image;
+                
+                html += `
+                    <div class="pokedex-card rounded-xl p-3 cursor-pointer hover:scale-105 transition-transform group relative" style="animation-delay: ${index * 30}ms">
+                        <div class="relative">
+                            <img 
+                                src="${smallImage}" 
+                                alt="${card.name}" 
+                                class="w-full h-auto rounded-lg shadow-lg group-hover:shadow-2xl transition-all"
+                                data-large="${largeImage}"
+                                loading="lazy"
+                                decoding="async"
+                                onerror="this.onerror=null; this.src='https://via.placeholder.com/245x342/1e293b/ffffff?text=${encodeURIComponent(card.name.substring(0, 10))}'"
+                                onmouseenter="if(this.dataset.large && this.dataset.large !== this.src) { const img = new Image(); img.src = this.dataset.large; img.onload = () => this.src = this.dataset.large; }"
+                            >
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"></div>
+                            <div class="absolute bottom-0 left-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div class="text-white text-xs font-semibold bg-black/80 px-2 py-1 rounded mb-1 truncate">${card.name}</div>
+                                ${card.set ? `<div class="text-white text-xs bg-black/70 px-2 py-1 rounded mb-1">${card.set}</div>` : ''}
+                                ${card.rarity ? `<div class="text-yellow-300 text-xs bg-black/70 px-2 py-1 rounded">${card.rarity}</div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Add "Show More" button if needed
+            if (hasMore) {
+                html += `
+                    <div class="col-span-full text-center py-4">
+                        <button onclick="loadTCGCards(currentPokemonForTCG, true)" class="px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white font-bold rounded-lg transition-all transform hover:scale-105">
+                            <i class="fas fa-chevron-down mr-2"></i>
+                            Voir toutes les cartes (${cards.length - MAX_CARDS_DISPLAY} de plus)
+                        </button>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+            
+            // Preload large images in background for smoother hover
+            if (!showAll) {
+                cardsToShow.forEach(card => {
+                    if (card.imageLarge && card.imageLarge !== card.image) {
+                        const img = new Image();
+                        img.src = card.imageLarge;
+                    }
+                });
+            }
+        }
+
+        async function updateEvolutionChain(pokemon) {
+            const container = document.getElementById('evolution-chain-container');
+            
+            if (!pokemon.evolutionChain || !pokemon.evolutionChain.chain) {
+                container.innerHTML = `
+                    <div class="text-center text-slate-400 w-full">
+                        <p>Ce Pokémon n'a pas de chaîne d'évolution connue.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            try {
+                const evolutionList = await parseEvolutionChain(pokemon.evolutionChain.chain);
+                
+                if (evolutionList.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center text-slate-400 w-full">
+                            <p>Ce Pokémon n'évolue pas.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Group evolutions by parent to handle branches (like Eevee)
+                const evolutionTree = [];
+                const baseForm = evolutionList.find(e => !e.parentId || e.evolutionDetails === 'Forme de base');
+                if (baseForm) {
+                    evolutionTree.push([baseForm]);
+                    const firstEvolutions = evolutionList.filter(e => e.parentId === baseForm.id);
+                    if (firstEvolutions.length > 0) {
+                        evolutionTree.push(firstEvolutions);
+                        // Check for second stage evolutions
+                        firstEvolutions.forEach(firstEvo => {
+                            const secondEvolutions = evolutionList.filter(e => e.parentId === firstEvo.id);
+                            if (secondEvolutions.length > 0) {
+                                evolutionTree.push(secondEvolutions);
+                            }
+                        });
+                    }
+                } else {
+                    // Fallback: simple linear chain
+                    evolutionTree.push(evolutionList);
+                }
+                
+                let html = '';
+                evolutionTree.forEach((stage, stageIndex) => {
+                    if (stageIndex > 0) {
+                        html += '<div class="w-full flex justify-center my-4"><i class="fas fa-arrow-down text-slate-400 text-2xl"></i></div>';
+                    }
+                    
+                    // If multiple evolutions at same stage (branches), display horizontally
+                    if (stage.length > 1) {
+                        html += '<div class="flex items-center justify-center space-x-4 flex-wrap gap-4 w-full">';
+                    }
+                    
+                    stage.forEach((evo, evoIndex) => {
+                        if (stage.length > 1 && evoIndex > 0) {
+                            html += '<span class="text-slate-400 mx-2">|</span>';
+                        }
+                        
+                        const type1 = evo.types[0] || 'normal';
+                        const type1Color = typeColors[type1] || 'slate-500';
+                        const isCurrent = evo.id === pokemon.id;
+                        
+                        html += `
+                            <div class="text-center ${isCurrent ? 'ring-2 ring-yellow-400 rounded-lg p-2' : ''}">
+                                <div class="w-20 h-20 bg-gradient-to-br from-${type1Color} rounded-full mx-auto mb-3 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform" onclick="searchPokemonById(${evo.id})">
+                                    <img src="${evo.sprite}" alt="${evo.name}" class="w-full h-full object-contain" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${evo.id}.png'">
+                                </div>
+                                <div class="text-white font-semibold">${evo.name}</div>
+                                <div class="text-slate-400 text-xs mt-1">#${String(evo.id).padStart(4, '0')}</div>
+                                <div class="text-slate-400 text-xs mt-1 max-w-[120px]">${evo.evolutionDetails}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    if (stage.length > 1) {
+                        html += '</div>';
+                    }
+                });
+                
+                container.innerHTML = html || '<div class="text-center text-slate-400 w-full"><p>Chaîne d\'évolution non disponible.</p></div>';
+            } catch (error) {
+                console.error('Erreur lors de l\'affichage de la chaîne d\'évolution:', error);
+                container.innerHTML = `
+                    <div class="text-center text-red-400 w-full">
+                        <p>Erreur lors du chargement de la chaîne d'évolution.</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function displayPokemonDetails(pokemon) {
+            // Hide popular pokemon and show details
+            document.getElementById('popular-pokemon').style.display = 'none';
+            document.getElementById('pokemon-details').classList.add('active');
+            const backBtn = document.getElementById('back-to-list');
+            if (backBtn) backBtn.classList.remove('hidden');
+
+            // Update basic info
+            document.getElementById('pokemon-name').textContent = pokemon.nameFR || pokemon.name;
+            document.getElementById('pokemon-height').textContent = `${pokemon.height}m`;
+            document.getElementById('pokemon-weight').textContent = `${pokemon.weight}kg`;
+            document.getElementById('pokemon-category').textContent = pokemon.category || pokemon.data?.species?.name || 'Pokémon';
+            document.getElementById('pokemon-ability').textContent = pokemon.abilities[0]?.replace('-', ' ') || 'N/A';
+
+            // Update image
+            const imageDiv = document.getElementById('pokemon-image');
+            const type1 = pokemon.types[0];
+            const type1Color = typeColors[type1] || 'slate-500';
+            imageDiv.className = `w-48 h-48 bg-gradient-to-br from-${type1Color} rounded-2xl flex items-center justify-center`;
+            imageDiv.innerHTML = `<img src="${pokemon.sprite}" alt="${pokemon.nameFR}" class="w-full h-full object-contain" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png'">`;
+
+            // Update types
+            const typesDiv = document.getElementById('pokemon-types');
+            typesDiv.innerHTML = pokemon.types.map(type => {
+                const typeColor = typeColors[type] || 'slate-500';
+                return `<span class="type-badge px-3 py-1 rounded-full text-white text-sm font-semibold bg-${typeColor}">${typeNamesFR[type] || type}</span>`;
+            }).join('');
+
+            // Update stats
+            const stats = pokemon.stats;
+            const maxStat = 180; // Higher max for better visualization
+            
+            const statFills = document.querySelectorAll('#pokemon-details .stat-fill');
+            if (statFills.length >= 6) {
+                statFills[0].style.width = `${(stats.hp / maxStat) * 100}%`;
+                statFills[1].style.width = `${(stats.attack / maxStat) * 100}%`;
+                statFills[2].style.width = `${(stats.defense / maxStat) * 100}%`;
+                statFills[3].style.width = `${(stats.spAttack / maxStat) * 100}%`;
+                statFills[4].style.width = `${(stats.spDefense / maxStat) * 100}%`;
+                statFills[5].style.width = `${(stats.speed / maxStat) * 100}%`;
+            }
+
+            // Update stat numbers
+            const statNumbers = document.querySelectorAll('#pokemon-details .text-white.text-sm.w-12');
+            if (statNumbers.length >= 6) {
+            statNumbers[0].textContent = stats.hp;
+            statNumbers[1].textContent = stats.attack;
+            statNumbers[2].textContent = stats.defense;
+            statNumbers[3].textContent = stats.spAttack;
+            statNumbers[4].textContent = stats.spDefense;
+            statNumbers[5].textContent = stats.speed;
+            }
+
+            // Update lore with detailed information
+            const loreDiv = document.getElementById('pokemon-lore');
+            if (pokemon.lore && pokemon.lore.length > 0) {
+                let loreHTML = '';
+                pokemon.lore.forEach((entry, index) => {
+                    if (entry.includes('Catégorie :') || entry.includes('Habitat :')) {
+                        loreHTML += `<p class="font-semibold text-yellow-400 mb-2">${entry}</p>`;
+                    } else {
+                        loreHTML += `<p class="mb-3">${entry}</p>`;
+                    }
+                });
+                
+                // Add generation info if available
+                if (pokemon.generation) {
+                    loreHTML = `<p class="font-semibold text-blue-400 mb-2">Génération ${pokemon.generation}</p>` + loreHTML;
+                }
+                
+                loreDiv.innerHTML = loreHTML;
+            } else {
+                loreDiv.innerHTML = '<p>Description détaillée non disponible pour ce Pokémon.</p>';
+            }
+
+            // Update Quick Facts
+            document.getElementById('fact-number').textContent = `#${String(pokemon.id).padStart(4, '0')}${pokemon.generation ? ` (Génération ${pokemon.generation})` : ''}`;
+            document.getElementById('fact-species').textContent = pokemon.category || 'Pokémon';
+            document.getElementById('fact-types').textContent = pokemon.types.map(t => typeNamesFR[t] || t).join(' / ');
+            document.getElementById('fact-height').textContent = `${pokemon.height}m`;
+            document.getElementById('fact-weight').textContent = `${pokemon.weight}kg`;
+            
+            // Get color and shape from species data
+            if (pokemon.speciesData) {
+                const colorFR = pokemon.speciesData.color?.name || 'Inconnue';
+                const shapeFR = pokemon.speciesData.shape?.name || 'Inconnue';
+                const colorMap = {
+                    'black': 'Noir', 'blue': 'Bleu', 'brown': 'Marron', 'gray': 'Gris', 'green': 'Vert',
+                    'pink': 'Rose', 'purple': 'Violet', 'red': 'Rouge', 'white': 'Blanc', 'yellow': 'Jaune'
+                };
+                const shapeMap = {
+                    'ball': 'Sphérique', 'squiggle': 'Serpentin', 'fish': 'Poisson', 'arms': 'Bras',
+                    'blob': 'Amorphe', 'upright': 'Bipède', 'legs': 'Quadrupède', 'quadruped': 'Quadrupède',
+                    'wings': 'Ailes', 'tentacles': 'Tentacules', 'heads': 'Têtes', 'humanoid': 'Humanoïde',
+                    'bug-wings': 'Ailes d\'insecte', 'armor': 'Armure'
+                };
+                document.getElementById('fact-color').textContent = colorMap[colorFR] || colorFR.charAt(0).toUpperCase() + colorFR.slice(1);
+                document.getElementById('fact-shape').textContent = shapeMap[shapeFR] || shapeFR.charAt(0).toUpperCase() + shapeFR.slice(1);
+            } else {
+                document.getElementById('fact-color').textContent = '-';
+                document.getElementById('fact-shape').textContent = '-';
+            }
+
+            // Update Habitat
+            const habitatDesc = document.getElementById('habitat-description');
+            const habitatLoc = document.getElementById('habitat-locations');
+            
+            if (pokemon.speciesData) {
+                const habitat = pokemon.speciesData.habitat;
+                const habitatNames = {
+                    'cave': 'Grottes', 'forest': 'Forêts', 'grassland': 'Prairies', 'mountain': 'Montagnes',
+                    'rare': 'Rare', 'rough-terrain': 'Terrain accidenté', 'sea': 'Océans', 'urban': 'Urbain',
+                    'waters-edge': 'Bords d\'eau'
+                };
+                
+                if (habitat) {
+                    const habitatName = habitatNames[habitat.name] || habitat.name.charAt(0).toUpperCase() + habitat.name.slice(1);
+                    // Get habitat description from flavor text
+                    const habitatEntries = pokemon.speciesData.flavor_text_entries
+                        .filter(e => (e.language.name === 'fr' || e.language.name === 'en') && e.flavor_text.toLowerCase().includes(habitat.name))
+                        .slice(0, 1);
+                    
+                    if (habitatEntries.length > 0) {
+                        habitatDesc.textContent = habitatEntries[0].flavor_text.replace(/\f/g, ' ').replace(/\n/g, ' ');
+                    } else {
+                        habitatDesc.textContent = `${pokemon.nameFR} vit principalement dans les ${habitatName.toLowerCase()}.`;
+                    }
+                    
+                    // Habitat locations
+                    const locationIcons = {
+                        'cave': 'fa-mountain', 'forest': 'fa-leaf', 'grassland': 'fa-seedling',
+                        'mountain': 'fa-mountain', 'sea': 'fa-water', 'waters-edge': 'fa-water',
+                        'urban': 'fa-city', 'rough-terrain': 'fa-mountain'
+                    };
+                    const icon = locationIcons[habitat.name] || 'fa-map-marker-alt';
+                    habitatLoc.innerHTML = `
+                        <div class="flex items-center space-x-2">
+                            <i class="fas ${icon} text-green-400 text-sm"></i>
+                            <span class="text-slate-300 text-sm">${habitatName}</span>
+                        </div>
+                    `;
+                } else {
+                    habitatDesc.textContent = `L'habitat de ${pokemon.nameFR} est inconnu ou très rare.`;
+                    habitatLoc.innerHTML = '<span class="text-slate-400 text-sm">Information non disponible</span>';
+                }
+            } else {
+                habitatDesc.textContent = 'Information sur l\'habitat non disponible.';
+                habitatLoc.innerHTML = '';
+            }
+
+            // Get specific anecdotes for each Pokemon
+            const funFactsList = document.getElementById('fun-facts-list');
+            const facts = getPokemonAnecdotes(pokemon);
+            
+            if (facts.length > 0) {
+                funFactsList.innerHTML = facts.slice(0, 4).map(fact => `<p>• ${fact}</p>`).join('');
+            } else {
+                funFactsList.innerHTML = '<p class="text-slate-400">Anecdotes non disponibles</p>';
+            }
+
+            // Update Evolution Chain (don't wait)
+            updateEvolutionChain(pokemon);
+
+            // Load TCG Cards (don't wait - load in parallel)
+            loadTCGCards(pokemon);
+
+            // Scroll to details
+            document.getElementById('pokemon-details').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Animate stats
+            setTimeout(() => {
+                anime({
+                    targets: '#pokemon-details .stat-fill',
+                    width: function(el, i) {
+                        const statValues = [stats.hp, stats.attack, stats.defense, stats.spAttack, stats.spDefense, stats.speed];
+                        return `${(statValues[i] / maxStat) * 100}%`;
+                    },
+                    duration: 1500,
+                    delay: anime.stagger(200),
+                    easing: 'easeOutExpo'
+                });
+            }, 500);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Pokédex: Initialisation...');
+            
+            // Load TCG cache
+            loadTCGCache();
+            
+            // Check if page loaded correctly
+            const grid = document.getElementById('pokemon-grid');
+            if (!grid) {
+                console.error('Erreur: pokemon-grid non trouvé');
+                alert('Erreur: La page Pokédex ne s\'est pas chargée correctement. Veuillez rafraîchir.');
+                return;
+            }
+            
+            // Check if functions are defined
+            if (typeof loadGeneration !== 'function') {
+                console.error('Erreur: loadGeneration n\'est pas définie');
+                grid.innerHTML = '<div class="col-span-full text-center text-red-400 p-8">Erreur: Fonctions JavaScript non chargées. Veuillez rafraîchir la page.</div>';
+                return;
+            }
+            
+            // Load Generation 1 by default
+            try {
+                console.log('Pokédex: Chargement de la génération 1...');
+                loadGeneration(1).catch(err => {
+                    console.error('Erreur lors du chargement:', err);
+                    grid.innerHTML = `
+                        <div class="col-span-full text-center text-red-400 p-8">
+                            <p class="text-xl font-bold mb-4">Erreur de chargement</p>
+                            <p class="mb-4">${err.message || 'Impossible de charger les Pokémon'}</p>
+                            <button onclick="location.reload()" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                                Rafraîchir la page
+                            </button>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error('Erreur lors de l\'initialisation:', error);
+                grid.innerHTML = `
+                    <div class="col-span-full text-center text-red-400 p-8">
+                        <p class="text-xl font-bold mb-4">Erreur de chargement</p>
+                        <p class="mb-4">${error.message || 'Une erreur est survenue'}</p>
+                        <button onclick="location.reload()" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                            Rafraîchir la page
+                        </button>
+                    </div>
+                `;
+            }
+            
+            // Scroll reveal animation
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('revealed');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.scroll-reveal').forEach(el => {
+                observer.observe(el);
+            });
+
+            // Add back button functionality
+            const backButton = document.createElement('button');
+            backButton.className = 'fixed top-20 right-4 z-50 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors shadow-lg hidden';
+            backButton.id = 'back-to-list';
+            backButton.innerHTML = '<i class="fas fa-arrow-left mr-2"></i>Retour à la liste';
+            backButton.onclick = () => {
+                document.getElementById('popular-pokemon').style.display = 'block';
+                document.getElementById('pokemon-details').classList.remove('active');
+                backButton.classList.add('hidden');
+                document.getElementById('pokemon-search').value = '';
+                filterByType('all');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+            document.body.appendChild(backButton);
+        });
+    </script>
+</body>
+</html>

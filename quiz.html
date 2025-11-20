@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz - Pokémon Community</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+        }
+        .quiz-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .quiz-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+        .answer-option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .answer-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        .answer-option.correct {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-color: #10b981;
+        }
+        .answer-option.incorrect {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-color: #ef4444;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover {
+            color: #fbbf24;
+            transform: translateY(-2px);
+        }
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+        .scroll-reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, #fbbf24, #f59e0b);
+            transition: width 0.5s ease;
+        }
+        .type-badge {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        }
+        .difficulty-easy {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        .difficulty-medium {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        .difficulty-hard {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        .quiz-hidden {
+            display: none;
+        }
+        .quiz-active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-bolt text-white text-sm"></i>
+                    </div>
+                    <span class="text-xl font-bold text-white">Pokémon Community</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="index.html" class="nav-link text-slate-300 hover:text-white font-medium">Accueil</a>
+                    <a href="test.html" class="nav-link text-slate-300 hover:text-white font-medium">Sailor Mélo</a>
+                    <a href="pokedex.html" class="nav-link text-slate-300 hover:text-white font-medium">Pokédex</a>
+                    <a href="forum.html" class="nav-link text-slate-300 hover:text-white font-medium">Forum</a>
+                    <a href="calendrier.html" class="nav-link text-slate-300 hover:text-white font-medium">Calendrier</a>
+                    <a href="quiz.html" class="nav-link text-white font-medium">Quiz</a>
+                    <a href="estimateur.html" class="nav-link text-slate-300 hover:text-white font-medium">Estimateur</a>
+                    <a href="collection.html" class="nav-link text-slate-300 hover:text-white font-medium">Classeur</a>
+                    <a href="wishlist.html" class="nav-link text-slate-300 hover:text-white font-medium">Wishlist</a>
+                </div>
+                <div class="md:hidden">
+                    <button class="text-white">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-24 pb-12 bg-gradient-to-br from-slate-800/50 to-slate-900/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 scroll-reveal">
+                <h1 class="text-4xl md:text-6xl font-black text-white mb-6">
+                    <span class="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
+                        Quiz
+                    </span>
+                    <span class="text-white"> Pokémon</span>
+                </h1>
+                <p class="text-xl text-slate-300 max-w-3xl mx-auto">Testez vos connaissances Pokémon avec des quiz interactifs adaptés à tous les niveaux</p>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <div class="flex items-center space-x-6 text-slate-300">
+                    <div class="flex items-center">
+                        <i class="fas fa-trophy text-yellow-400 mr-2"></i>
+                        <span>5,234 quizz complétés</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-users text-blue-400 mr-2"></i>
+                        <span>1,892 participants</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-star text-orange-400 mr-2"></i>
+                        <span>Note moyenne: 4.7/5</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quiz Selection -->
+    <section id="quiz-selection" class="py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 scroll-reveal">
+                <h2 class="text-3xl md:text-4xl font-black text-white mb-6">Choisissez Votre Quiz</h2>
+                <p class="text-xl text-slate-300 max-w-3xl mx-auto">Sélectionnez un quiz adapté à votre niveau et testez vos connaissances</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Types et Faiblesses -->
+                <div class="quiz-card rounded-2xl p-8 scroll-reveal" onclick="startQuiz('types')">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+                            <i class="fas fa-shield-alt text-white text-3xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-2">Types et Faiblesses</h3>
+                        <div class="difficulty-easy text-white text-sm px-3 py-1 rounded-full inline-block mb-4">
+                            Facile
+                        </div>
+                    </div>
+                    <p class="text-slate-300 mb-6">Testez vos connaissances sur les types Pokémon et leurs faiblesses. Quiz essentiel pour maîtriser les combats!</p>
+                    <div class="space-y-3 mb-6">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Questions:</span>
+                            <span class="text-white font-semibold">10</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Durée:</span>
+                            <span class="text-white font-semibold">5 min</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Joué:</span>
+                            <span class="text-white font-semibold">2,847 fois</span>
+                        </div>
+                    </div>
+                    <button class="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                        <i class="fas fa-play mr-2"></i>
+                        Commencer
+                    </button>
+                </div>
+
+                <!-- Générations Pokémon -->
+                <div class="quiz-card rounded-2xl p-8 scroll-reveal" onclick="startQuiz('generations')">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                            <i class="fas fa-list-ol text-white text-3xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-2">Générations Pokémon</h3>
+                        <div class="difficulty-medium text-white text-sm px-3 py-1 rounded-full inline-block mb-4">
+                            Moyen
+                        </div>
+                    </div>
+                    <p class="text-slate-300 mb-6">Parcourez l'histoire des 9 générations Pokémon. Testez votre mémoire sur les créatures emblématiques de chaque région!</p>
+                    <div class="space-y-3 mb-6">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Questions:</span>
+                            <span class="text-white font-semibold">15</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Durée:</span>
+                            <span class="text-white font-semibold">8 min</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Joué:</span>
+                            <span class="text-white font-semibold">1,623 fois</span>
+                        </div>
+                    </div>
+                    <button class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                        <i class="fas fa-play mr-2"></i>
+                        Commencer
+                    </button>
+                </div>
+
+                <!-- Connaissances Avancées -->
+                <div class="quiz-card rounded-2xl p-8 scroll-reveal" onclick="startQuiz('advanced')">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                            <i class="fas fa-brain text-white text-3xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-2">Connaissances Avancées</h3>
+                        <div class="difficulty-hard text-white text-sm px-3 py-1 rounded-full inline-block mb-4">
+                            Difficile
+                        </div>
+                    </div>
+                    <p class="text-slate-300 mb-6">Défiez les meilleurs avec des questions sur les mécaniques complexes, les stratégies compétitives et les données cachées!</p>
+                    <div class="space-y-3 mb-6">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Questions:</span>
+                            <span class="text-white font-semibold">20</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Durée:</span>
+                            <span class="text-white font-semibold">12 min</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Joué:</span>
+                            <span class="text-white font-semibold">756 fois</span>
+                        </div>
+                    </div>
+                    <button class="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                        <i class="fas fa-play mr-2"></i>
+                        Commencer
+                    </button>
+                </div>
+
+                <!-- Quiz Spécial Méga-Évolution -->
+                <div class="quiz-card rounded-2xl p-8 scroll-reveal" onclick="startQuiz('mega')">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-gradient-to-br from-yellow-500 to-red-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                            <i class="fas fa-bolt text-white text-3xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-2">Méga-Évolutions</h3>
+                        <div class="difficulty-medium text-white text-sm px-3 py-1 rounded-full inline-block mb-4">
+                            Moyen
+                        </div>
+                    </div>
+                    <p class="text-slate-300 mb-6">Spécial Méga-Évolutions! Testez vos connaissances sur ces formes puissantes et leurs mécaniques uniques.</p>
+                    <div class="space-y-3 mb-6">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Questions:</span>
+                            <span class="text-white font-semibold">12</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Durée:</span>
+                            <span class="text-white font-semibold">6 min</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Joué:</span>
+                            <span class="text-white font-semibold">1,234 fois</span>
+                        </div>
+                    </div>
+                    <button class="w-full bg-gradient-to-r from-yellow-500 to-red-600 hover:from-yellow-600 hover:to-red-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                        <i class="fas fa-play mr-2"></i>
+                        Commencer
+                    </button>
+                </div>
+
+                <!-- Quiz Anime -->
+                <div class="quiz-card rounded-2xl p-8 scroll-reveal" onclick="startQuiz('anime')">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                            <i class="fas fa-tv text-white text-3xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-2">Univers Anime</h3>
+                        <div class="difficulty-easy text-white text-sm px-3 py-1 rounded-full inline-block mb-4">
+                            Facile
+                        </div>
+                    </div>
+                    <p class="text-slate-300 mb-6">Plongez dans l'univers de l'anime Pokémon! Testez votre mémoire sur les épisodes, personnages et moments iconiques.</p>
+                    <div class="space-y-3 mb-6">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Questions:</span>
+                            <span class="text-white font-semibold">10</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Durée:</span>
+                            <span class="text-white font-semibold">5 min</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Joué:</span>
+                            <span class="text-white font-semibold">3,456 fois</span>
+                        </div>
+                    </div>
+                    <button class="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                        <i class="fas fa-play mr-2"></i>
+                        Commencer
+                    </button>
+                </div>
+
+                <!-- Quiz Légendaires -->
+                <div class="quiz-card rounded-2xl p-8 scroll-reveal" onclick="startQuiz('legendary')">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-gradient-to-br from-teal-500 to-blue-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                            <i class="fas fa-crown text-white text-3xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-2">Pokémon Légendaires</h3>
+                        <div class="difficulty-hard text-white text-sm px-3 py-1 rounded-full inline-block mb-4">
+                            Difficile
+                        </div>
+                    </div>
+                    <p class="text-slate-300 mb-6">Les créateurs d'Univers! Testez vos connaissances sur les Pokémon légendaires, leurs histoires et pouvoirs uniques.</p>
+                    <div class="space-y-3 mb-6">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Questions:</span>
+                            <span class="text-white font-semibold">15</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Durée:</span>
+                            <span class="text-white font-semibold">10 min</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Joué:</span>
+                            <span class="text-white font-semibold">987 fois</span>
+                        </div>
+                    </div>
+                    <button class="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                        <i class="fas fa-play mr-2"></i>
+                        Commencer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quiz Interface -->
+    <section id="quiz-interface" class="py-12 quiz-hidden">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="quiz-card rounded-2xl p-8">
+                <!-- Quiz Header -->
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 id="quiz-title" class="text-2xl font-bold text-white">Types et Faiblesses</h2>
+                        <p id="quiz-description" class="text-slate-400">Testez vos connaissances sur les types Pokémon</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold text-yellow-400" id="quiz-score">0/10</div>
+                        <div class="text-slate-400 text-sm">Score</div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="mb-8">
+                    <div class="flex justify-between text-sm text-slate-400 mb-2">
+                        <span>Progression</span>
+                        <span id="quiz-progress">1/10</span>
+                    </div>
+                    <div class="w-full bg-slate-700 rounded-full h-2">
+                        <div class="progress-bar h-2 rounded-full" style="width: 10%" id="progress-bar"></div>
+                    </div>
+                </div>
+
+                <!-- Question -->
+                <div id="question-container">
+                    <div class="mb-8">
+                        <h3 id="question-text" class="text-xl font-semibold text-white mb-4">
+                            Quel type est super efficace contre un Pokémon Eau/Vol ?
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="answer-option rounded-lg p-4" onclick="selectAnswer(this, false)">
+                                <div class="flex items-center space-x-3">
+                                    <div class="type-badge w-8 h-8 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-bolt text-white text-sm"></i>
+                                    </div>
+                                    <span class="text-white font-semibold">Électrik</span>
+                                </div>
+                            </div>
+                            <div class="answer-option rounded-lg p-4" onclick="selectAnswer(this, true)">
+                                <div class="flex items-center space-x-3">
+                                    <div class="type-badge w-8 h-8 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-snowflake text-white text-sm"></i>
+                                    </div>
+                                    <span class="text-white font-semibold">Glace</span>
+                                </div>
+                            </div>
+                            <div class="answer-option rounded-lg p-4" onclick="selectAnswer(this, false)">
+                                <div class="flex items-center space-x-3">
+                                    <div class="type-badge w-8 h-8 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-leaf text-white text-sm"></i>
+                                    </div>
+                                    <span class="text-white font-semibold">Plante</span>
+                                </div>
+                            </div>
+                            <div class="answer-option rounded-lg p-4" onclick="selectAnswer(this, false)">
+                                <div class="flex items-center space-x-3">
+                                    <div class="type-badge w-8 h-8 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-mountain text-white text-sm"></i>
+                                    </div>
+                                    <span class="text-white font-semibold">Roche</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quiz Controls -->
+                <div class="flex justify-between items-center">
+                    <button onclick="backToSelection()" class="px-6 py-3 border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 rounded-lg transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Retour
+                    </button>
+                    <button id="next-question" onclick="nextQuestion()" class="px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 font-bold rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 opacity-50 cursor-not-allowed" disabled>
+                        Question Suivante
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quiz Results -->
+    <section id="quiz-results" class="py-12 quiz-hidden">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="quiz-card rounded-2xl p-8 text-center">
+                <div class="mb-8">
+                    <div class="w-32 h-32 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full mx-auto mb-6 flex items-center justify-center">
+                        <i class="fas fa-trophy text-white text-5xl"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white mb-4">Quiz Terminé!</h2>
+                    <div class="text-6xl font-black text-yellow-400 mb-2" id="final-score">8/10</div>
+                    <p class="text-xl text-slate-300 mb-6">Excellent travail!</p>
+                    
+                    <div class="bg-slate-800/50 rounded-lg p-6 mb-6">
+                        <div class="grid grid-cols-3 gap-4 text-center">
+                            <div>
+                                <div class="text-2xl font-bold text-blue-400" id="correct-answers">8</div>
+                                <div class="text-slate-400 text-sm">Correctes</div>
+                            </div>
+                            <div>
+                                <div class="text-2xl font-bold text-red-400" id="incorrect-answers">2</div>
+                                <div class="text-slate-400 text-sm">Incorrectes</div>
+                            </div>
+                            <div>
+                                <div class="text-2xl font-bold text-green-400" id="accuracy">80%</div>
+                                <div class="text-slate-400 text-sm">Précision</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="restartQuiz()" class="px-8 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 font-bold rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-300">
+                        <i class="fas fa-redo mr-2"></i>
+                        Rejouer
+                    </button>
+                    <button onclick="backToSelection()" class="px-8 py-3 border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 rounded-lg transition-colors">
+                        <i class="fas fa-home mr-2"></i>
+                        Accueil
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-700 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <div class="flex items-center justify-center space-x-2 mb-4">
+                    <div class="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-bolt text-white text-sm"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-white">Pokémon Community</span>
+                </div>
+                <p class="text-slate-400 mb-6">La communauté ultime pour les fans de Pokémon</p>
+                <div class="flex justify-center space-x-6 mb-6">
+                    <a href="#" class="text-slate-400 hover:text-white transition-colors">
+                        <i class="fab fa-twitter text-xl"></i>
+                    </a>
+                    <a href="#" class="text-slate-400 hover:text-white transition-colors">
+                        <i class="fab fa-discord text-xl"></i>
+                    </a>
+                    <a href="#" class="text-slate-400 hover:text-white transition-colors">
+                        <i class="fab fa-youtube text-xl"></i>
+                    </a>
+                    <a href="#" class="text-slate-400 hover:text-white transition-colors">
+                        <i class="fab fa-instagram text-xl"></i>
+                    </a>
+                </div>
+                <p class="text-slate-500 text-sm">© 2025 Pokémon Community. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let currentQuiz = null;
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+
+        const quizzes = {
+            types: {
+                title: "Types et Faiblesses",
+                description: "Testez vos connaissances sur les types Pokémon",
+                questions: [
+                    {
+                        question: "Quel type est super efficace contre un Pokémon Eau/Vol ?",
+                        answers: [
+                            { text: "Électrik", correct: false },
+                            { text: "Glace", correct: true },
+                            { text: "Plante", correct: false },
+                            { text: "Roche", correct: false }
+                        ]
+                    },
+                    {
+                        question: "Quel type n'est pas efficace contre le type Acier ?",
+                        answers: [
+                            { text: "Combat", correct: false },
+                            { text: "Feu", correct: false },
+                            { text: "Dragon", correct: true },
+                            { text: "Sol", correct: false }
+                        ]
+                    },
+                    {
+                        question: "Quel type est faible contre les attaques Spectre ?",
+                        answers: [
+                            { text: "Psy", correct: true },
+                            { text: "Ténèbres", correct: false },
+                            { text: "Normal", correct: false },
+                            { text: "Fée", correct: false }
+                        ]
+                    }
+                ]
+            },
+            generations: {
+                title: "Générations Pokémon",
+                description: "Parcourez l'histoire des 9 générations",
+                questions: [
+                    {
+                        question: "Dans quelle génération Pikachu a-t-il été introduit ?",
+                        answers: [
+                            { text: "1ère génération", correct: true },
+                            { text: "2ème génération", correct: false },
+                            { text: "3ème génération", correct: false },
+                            { text: "4ème génération", correct: false }
+                        ]
+                    },
+                    {
+                        question: "Quelle région correspond à la 3ème génération ?",
+                        answers: [
+                            { text: "Johto", correct: false },
+                            { text: "Hoenn", correct: true },
+                            { text: "Sinnoh", correct: false },
+                            { text: "Unys", correct: false }
+                        ]
+                    }
+                ]
+            },
+            advanced: {
+                title: "Connaissances Avancées",
+                description: "Défiez les meilleurs avec des questions complexes",
+                questions: [
+                    {
+                        question: "Quel est le talent caché de Dracaufeu ?",
+                        answers: [
+                            { text: "Brasier", correct: false },
+                            { text: "Force Soleil", correct: true },
+                            { text: "Torche", correct: false },
+                            { text: "Enflamme", correct: false }
+                        ]
+                    },
+                    {
+                        question: "Quel objet permet de faire Méga-Évoluer Mewtwo ?",
+                        answers: [
+                            { text: "Méga-gemme", correct: false },
+                            { text: "Pierre Mewtwo", correct: false },
+                            { text: "Méga-Anneau", correct: false },
+                            { text: "Méga-Pierre", correct: true }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        function startQuiz(quizType) {
+            currentQuiz = quizzes[quizType] || quizzes.types;
+            currentQuestion = 0;
+            score = 0;
+            answered = false;
+
+            document.getElementById('quiz-selection').classList.add('quiz-hidden');
+            document.getElementById('quiz-interface').classList.remove('quiz-hidden');
+            document.getElementById('quiz-interface').classList.add('quiz-active');
+
+            document.getElementById('quiz-title').textContent = currentQuiz.title;
+            document.getElementById('quiz-description').textContent = currentQuiz.description;
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const question = currentQuiz.questions[currentQuestion];
+            document.getElementById('question-text').textContent = question.question;
+            document.getElementById('quiz-progress').textContent = `${currentQuestion + 1}/${currentQuiz.questions.length}`;
+            document.getElementById('quiz-score').textContent = `${score}/${currentQuiz.questions.length}`;
+            
+            const progressPercent = ((currentQuestion + 1) / currentQuiz.questions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+
+            // Reset answer options
+            const container = document.getElementById('question-container');
+            const options = container.querySelectorAll('.answer-option');
+            options.forEach((option, index) => {
+                option.className = 'answer-option rounded-lg p-4';
+                option.onclick = () => selectAnswer(option, question.answers[index].correct);
+            });
+
+            document.getElementById('next-question').disabled = true;
+            document.getElementById('next-question').classList.add('opacity-50', 'cursor-not-allowed');
+            answered = false;
+        }
+
+        function selectAnswer(element, isCorrect) {
+            if (answered) return;
+            
+            answered = true;
+            const options = document.querySelectorAll('.answer-option');
+            
+            options.forEach(option => {
+                option.onclick = null;
+            });
+
+            if (isCorrect) {
+                element.classList.add('correct');
+                score++;
+                document.getElementById('quiz-score').textContent = `${score}/${currentQuiz.questions.length}`;
+            } else {
+                element.classList.add('incorrect');
+                // Show correct answer
+                options.forEach(option => {
+                    const answerText = option.querySelector('span').textContent;
+                    const correctAnswer = currentQuiz.questions[currentQuestion].answers.find(a => a.correct);
+                    if (correctAnswer && answerText === correctAnswer.text) {
+                        option.classList.add('correct');
+                    }
+                });
+            }
+
+            document.getElementById('next-question').disabled = false;
+            document.getElementById('next-question').classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < currentQuiz.questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quiz-interface').classList.add('quiz-hidden');
+            document.getElementById('quiz-results').classList.remove('quiz-hidden');
+            document.getElementById('quiz-results').classList.add('quiz-active');
+
+            const totalQuestions = currentQuiz.questions.length;
+            const accuracy = Math.round((score / totalQuestions) * 100);
+
+            document.getElementById('final-score').textContent = `${score}/${totalQuestions}`;
+            document.getElementById('correct-answers').textContent = score;
+            document.getElementById('incorrect-answers').textContent = totalQuestions - score;
+            document.getElementById('accuracy').textContent = `${accuracy}%`;
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            answered = false;
+            loadQuestion();
+            
+            document.getElementById('quiz-results').classList.add('quiz-hidden');
+            document.getElementById('quiz-interface').classList.remove('quiz-hidden');
+            document.getElementById('quiz-interface').classList.add('quiz-active');
+        }
+
+        function backToSelection() {
+            document.getElementById('quiz-interface').classList.add('quiz-hidden');
+            document.getElementById('quiz-results').classList.add('quiz-hidden');
+            document.getElementById('quiz-selection').classList.remove('quiz-hidden');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Scroll reveal animation
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('revealed');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.scroll-reveal').forEach(el => {
+                observer.observe(el);
+            });
+
+            // Anime.js animations
+            anime({
+                targets: '.quiz-card',
+                translateY: [50, 0],
+                opacity: [0, 1],
+                delay: anime.stagger(200),
+                duration: 800,
+                easing: 'easeOutExpo'
+            });
+        });
+    </script>
+</body>
+</html>
