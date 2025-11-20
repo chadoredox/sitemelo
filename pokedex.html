@@ -1162,6 +1162,63 @@
             loadTCGCardsAsync(pokemon, showAll);
         }
 
+        // Table de traduction français -> anglais pour les noms de Pokémon
+        const pokemonNameTranslations = {
+            'aspicot': 'weedle', 'chenipan': 'caterpie', 'métapod': 'metapod', 'chrysacier': 'kakuna',
+            'papilusion': 'butterfree', 'dardargnan': 'beedrill', 'roucool': 'pidgey', 'roucoups': 'pidgeotto',
+            'roucarnage': 'pidgeot', 'rattata': 'rattata', 'rattatac': 'raticate', 'piafabec': 'spearow',
+            'rapasdepic': 'fearow', 'abeunor': 'ekans', 'arbok': 'arbok', 'pikachu': 'pikachu',
+            'raichu': 'raichu', 'sabelette': 'sandshrew', 'sablaireau': 'sandslash', 'nidoran♀': 'nidoran-f',
+            'nidorina': 'nidorina', 'nidoqueen': 'nidoqueen', 'nidoran♂': 'nidoran-m', 'nidorino': 'nidorino',
+            'nidoking': 'nidoking', 'mélofée': 'clefairy', 'mélodelfe': 'clefable', 'goupix': 'vulpix',
+            'feunard': 'ninetales', 'rondoudou': 'jigglypuff', 'grodoudou': 'wigglytuff', 'nosferapti': 'zubat',
+            'nosferalto': 'golbat', 'mystherbe': 'oddish', 'ortide': 'gloom', 'rafflesia': 'vileplume',
+            'paras': 'paras', 'parasect': 'parasect', 'mimitoss': 'venonat', 'aéromite': 'venomoth',
+            'taupiqueur': 'diglett', 'triopikeur': 'dugtrio', 'miamiasme': 'meowth', 'persian': 'persian',
+            'psykokwak': 'psyduck', 'akwakwak': 'golduck', 'ferossinge': 'mankey', 'colossinge': 'primeape',
+            'caninos': 'growlithe', 'arcanin': 'arcanine', 'ptitard': 'poliwag', 'têtarte': 'poliwhirl',
+            'tartard': 'poliwrath', 'abra': 'abra', 'kadabra': 'kadabra', 'alakazam': 'alakazam',
+            'machoc': 'machop', 'machopeur': 'machoke', 'mackogneur': 'machamp', 'chétiflor': 'bellsprout',
+            'boustiflor': 'weepinbell', 'empiflor': 'victreebel', 'tentacool': 'tentacool', 'tentacruel': 'tentacruel',
+            'racaillou': 'geodude', 'gravalanch': 'graveler', 'grolem': 'golem', 'ponyta': 'ponyta',
+            'galopa': 'rapidash', 'ramoloss': 'slowpoke', 'flagadoss': 'slowbro', 'magnéti': 'magnemite',
+            'magnéton': 'magneton', 'canarticho': 'farfetchd', 'doduo': 'doduo', 'dodrio': 'dodrio',
+            'otaria': 'seel', 'lamantine': 'dewgong', 'tadmorv': 'grimer', 'grotadmorv': 'muk',
+            'kokiyas': 'shellder', 'crustabri': 'cloyster', 'fantominus': 'gastly', 'spectrier': 'haunter',
+            'ectoplasma': 'gengar', 'onix': 'onix', 'soporifik': 'drowzee', 'hypnomade': 'hypno',
+            'krabby': 'krabby', 'krabboss': 'kingler', 'voltorbe': 'voltorb', 'électrode': 'electrode',
+            'noeunoeuf': 'exeggcute', 'noadkoko': 'exeggutor', 'osselait': 'cubone', 'ossatueur': 'marowak',
+            'kicklee': 'hitmonlee', 'tygnon': 'hitmonchan', 'excelangue': 'lickitung', 'smogo': 'koffing',
+            'smogogo': 'weezing', 'cornèbre': 'rhyhorn', 'rhinocorne': 'rhydon', 'leveinard': 'chansey',
+            'saquedeneu': 'tangela', 'kangourex': 'kangaskhan', 'hypotrempe': 'horsea', 'hypocéan': 'seadra',
+            'poissirène': 'goldeen', 'poissoroy': 'seaking', 'stari': 'staryu', 'staross': 'starmie',
+            'm. mime': 'mr-mime', 'insécateur': 'scyther', 'lézardux': 'electabuzz', 'magmar': 'magmar',
+            'scarabrute': 'pinsir', 'tauros': 'tauros', 'magicarpe': 'magikarp', 'léviator': 'gyarados',
+            'lokhlass': 'lapras', 'métamorph': 'ditto', 'évoli': 'eevee', 'aquali': 'vaporeon',
+            'voltali': 'jolteon', 'pyroli': 'flareon', 'porygon': 'porygon', 'ammonita': 'omanyte',
+            'amomistar': 'omastar', 'kabuto': 'kabuto', 'kabutops': 'kabutops', 'ptéra': 'aerodactyl',
+            'ronflex': 'snorlax', 'artikodin': 'articuno', 'électhor': 'zapdos', 'sulfura': 'moltres',
+            'minidraco': 'dratini', 'draco': 'dragonair', 'dracolosse': 'dragonite', 'mewtwo': 'mewtwo',
+            'mew': 'mew'
+        };
+
+        // Fonction pour obtenir le nom anglais depuis le nom français ou anglais
+        function getEnglishPokemonName(name) {
+            if (!name) return '';
+            
+            // Normaliser le nom (minuscules, sans accents si possible)
+            const normalized = name.toLowerCase().trim();
+            
+            // Si c'est déjà en anglais (pas dans la table de traduction), retourner tel quel
+            if (!pokemonNameTranslations[normalized]) {
+                // Vérifier si c'est déjà un nom anglais (pas de caractères accentués français)
+                return normalized;
+            }
+            
+            // Retourner la traduction
+            return pokemonNameTranslations[normalized] || normalized;
+        }
+
         async function loadTCGCardsAsync(pokemon, showAll = false) {
             const container = document.getElementById('tcg-cards-container');
             const cacheKey = String(pokemon.id);
@@ -1175,11 +1232,25 @@
                 }
             }
             
-            // Récupérer le nom anglais (l'API TCG fonctionne en anglais)
-            let englishName = pokemon.englishName || pokemon.name || pokemon.data?.name || '';
+            // Récupérer le nom (peut être français ou anglais)
+            let pokemonName = pokemon.nameFR || pokemon.englishName || pokemon.name || pokemon.data?.name || '';
             
-            // Nettoyage du nom pour l'API (par exemple pour "Nidoran♀" -> "Nidoran")
-            englishName = englishName.split('-')[0].replace(/[♂♀.]/g, '').trim();
+            // Obtenir le nom anglais (traduction si nécessaire)
+            let englishName = getEnglishPokemonName(pokemonName);
+            
+            // Si la traduction n'a rien donné, essayer avec englishName directement
+            if (!englishName || englishName === pokemonName.toLowerCase()) {
+                englishName = pokemon.englishName || pokemon.name || '';
+            }
+            
+            // Nettoyage du nom pour l'API (par exemple pour "Nidoran♀" -> "Nidoran", "Mr. Mime" -> "Mr-Mime")
+            englishName = englishName.split('-')[0].replace(/[♂♀.]/g, '').trim().toLowerCase();
+            
+            // Corrections spéciales pour certains noms
+            if (englishName === 'nidoranf' || englishName === 'nidoran-f') englishName = 'nidoran-f';
+            if (englishName === 'nidoranm' || englishName === 'nidoran-m') englishName = 'nidoran-m';
+            if (englishName === 'mrmime' || englishName === 'mr mime') englishName = 'mr-mime';
+            if (englishName === 'farfetchd') englishName = 'farfetchd';
             
             // Afficher le chargement
             container.innerHTML = `
@@ -1194,150 +1265,187 @@
             let lastError = null;
             let isCorsError = false;
             
+            // Liste des stratégies de recherche à essayer (par ordre de priorité)
+            const searchStrategies = [
+                `name:"${englishName}"`,      // Recherche exacte avec guillemets
+                `name:${englishName}*`,       // Recherche avec wildcard
+                `name:${englishName}`,        // Recherche simple
+            ];
+            
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
-                try {
-                    // Utilisation de l'API pokemontcg.io
-                    const apiUrl = `https://api.pokemontcg.io/v2/cards?q=name:${encodeURIComponent(englishName)}*&pageSize=50`;
-                    
-                    // Timeout progressif : 20s, 30s, 40s, 50s
-                    const timeout = 20000 + (attempt - 1) * 10000;
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), timeout);
+                // Essayer chaque stratégie de recherche
+                for (let strategyIndex = 0; strategyIndex < searchStrategies.length; strategyIndex++) {
+                    const searchQuery = searchStrategies[strategyIndex];
+                    const apiUrl = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(searchQuery)}&pageSize=50`;
                     
                     try {
-                        const response = await fetch(apiUrl, {
-                            headers: {
-                                'Accept': 'application/json'
-                            },
-                            signal: controller.signal,
-                            // Mode cors pour mieux gérer les erreurs
-                            mode: 'cors',
-                            // Cache pour éviter les requêtes répétées
-                            cache: attempt === 1 ? 'default' : 'no-cache'
-                        });
+                        // Timeout progressif : 20s, 30s, 40s, 50s
+                        const timeout = 20000 + (attempt - 1) * 10000;
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), timeout);
                         
-                        clearTimeout(timeoutId);
+                        try {
+                            const response = await fetch(apiUrl, {
+                                headers: {
+                                    'Accept': 'application/json'
+                                },
+                                signal: controller.signal,
+                                mode: 'cors',
+                                cache: (attempt === 1 && strategyIndex === 0) ? 'default' : 'no-cache'
+                            });
+                            
+                            clearTimeout(timeoutId);
 
-                        if (!response.ok) {
-                            // Si erreur 504 (Gateway Timeout), c'est souvent un problème temporaire
-                            if (response.status === 504 && attempt < maxRetries) {
-                                throw new Error('TIMEOUT_RETRY');
+                            // Si 404, passer à la stratégie suivante (pas une erreur fatale)
+                            if (response.status === 404) {
+                                console.log(`[TCG API] 404 avec "${searchQuery}", essai de la prochaine syntaxe...`);
+                                if (strategyIndex < searchStrategies.length - 1) {
+                                    continue; // Essayer la prochaine stratégie
+                                }
+                                // Si c'est la dernière stratégie, continuer avec la prochaine tentative
+                                break;
                             }
-                            throw new Error(`Erreur API: ${response.status}`);
-                        }
 
-                        const data = await response.json();
-                        const cards = data.data || [];
-
-                        if (cards.length > 0) {
-                            // Formatage des données pour votre affichage existant
-                            const formattedCards = cards.map(card => ({
-                                id: card.id,
-                                name: card.name,
-                                image: card.images?.small,       // Image basse résolution
-                                imageLarge: card.images?.large,  // Image haute résolution
-                                set: card.set?.name,
-                                number: card.number,
-                                rarity: card.rarity
-                            })).filter(card => card.image); // On garde seulement ceux qui ont une image
-
-                            if (formattedCards.length > 0) {
-                                // Sauvegarde en cache
-                                saveTCGCache(cacheKey, formattedCards);
-                                allLoadedCards = formattedCards;
-                                // Affichage
-                                displayTCGCards(formattedCards, showAll);
-                                return; 
+                            if (!response.ok) {
+                                // Si erreur 504 (Gateway Timeout), c'est souvent un problème temporaire
+                                if (response.status === 504 && attempt < maxRetries) {
+                                    throw new Error('TIMEOUT_RETRY');
+                                }
+                                // Pour les autres erreurs, passer à la stratégie suivante si possible
+                                if (response.status !== 404 && strategyIndex < searchStrategies.length - 1) {
+                                    continue;
+                                }
+                                throw new Error(`Erreur API: ${response.status}`);
                             }
-                        }
-                        
-                        // Si aucune carte trouvée
-                        container.innerHTML = `
-                            <div class="col-span-full text-center text-slate-400 py-8">
-                                <i class="fas fa-cards-blank text-4xl mb-4 opacity-50"></i>
-                                <p class="text-lg font-semibold mb-2">Aucune carte TCG trouvée</p>
-                                <p class="text-sm">Aucune carte trouvée pour ${pokemon.nameFR || englishName}.</p>
-                            </div>
-                        `;
-                        return;
-                        
-                    } catch (fetchError) {
-                        clearTimeout(timeoutId);
-                        
-                        // Détecter les erreurs CORS spécifiquement
-                        if (fetchError.message && (
-                            fetchError.message.includes('CORS') || 
-                            fetchError.message.includes('Access-Control-Allow-Origin') ||
-                            (fetchError.message.includes('Failed to fetch') && !navigator.onLine === false)
-                        )) {
-                            isCorsError = true;
-                            // Pour les erreurs CORS, on attend plus longtemps entre les tentatives
-                            if (attempt < maxRetries) {
-                                container.innerHTML = `
-                                    <div class="col-span-full text-center text-slate-400 py-8">
-                                        <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                                        <p>Chargement des cartes TCG... (tentative ${attempt + 1}/${maxRetries})</p>
-                                        <p class="text-xs text-slate-500 mt-2">Problème de connexion détecté, nouvelle tentative...</p>
-                                    </div>
-                                `;
-                                // Attendre plus longtemps pour CORS (5 secondes)
-                                await new Promise(resolve => setTimeout(resolve, 5000));
+
+                            const data = await response.json();
+                            const cards = data.data || [];
+
+                            if (cards.length > 0) {
+                                // Formatage des données pour votre affichage existant
+                                const formattedCards = cards.map(card => ({
+                                    id: card.id,
+                                    name: card.name,
+                                    image: card.images?.small,       // Image basse résolution
+                                    imageLarge: card.images?.large,  // Image haute résolution
+                                    set: card.set?.name,
+                                    number: card.number,
+                                    rarity: card.rarity
+                                })).filter(card => card.image); // On garde seulement ceux qui ont une image
+
+                                if (formattedCards.length > 0) {
+                                    console.log(`[TCG API] Succès ! ${formattedCards.length} carte(s) trouvée(s) avec "${searchQuery}"`);
+                                    // Sauvegarde en cache
+                                    saveTCGCache(cacheKey, formattedCards);
+                                    allLoadedCards = formattedCards;
+                                    // Affichage
+                                    displayTCGCards(formattedCards, showAll);
+                                    return; 
+                                }
+                            }
+                            
+                            // Si aucune carte trouvée avec cette stratégie, essayer la suivante
+                            if (strategyIndex < searchStrategies.length - 1) {
+                                console.log(`[TCG API] Aucune carte trouvée avec "${searchQuery}", essai suivant...`);
                                 continue;
                             }
-                        }
-                        
-                        if (fetchError.name === 'AbortError' || fetchError.message === 'TIMEOUT_RETRY') {
-                            lastError = new Error(`Timeout après ${timeout/1000}s (tentative ${attempt}/${maxRetries})`);
-                            if (attempt < maxRetries) {
-                                container.innerHTML = `
-                                    <div class="col-span-full text-center text-slate-400 py-8">
-                                        <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                                        <p>Chargement des cartes TCG... (tentative ${attempt + 1}/${maxRetries})</p>
-                                        <p class="text-xs text-slate-500 mt-2">L'API est lente, nouvelle tentative...</p>
-                                    </div>
-                                `;
-                                // Attendre avant de réessayer
-                                await new Promise(resolve => setTimeout(resolve, 3000));
-                                continue;
+                            
+                        } catch (fetchError) {
+                            clearTimeout(timeoutId);
+                            
+                            // Si c'est une 404, passer à la stratégie suivante
+                            if (fetchError.message && fetchError.message.includes('404')) {
+                                if (strategyIndex < searchStrategies.length - 1) {
+                                    continue;
+                                }
+                                break; // Passer à la prochaine tentative
+                            }
+                            
+                            // Détecter les erreurs CORS spécifiquement
+                            if (fetchError.message && (
+                                fetchError.message.includes('CORS') || 
+                                fetchError.message.includes('Access-Control-Allow-Origin') ||
+                                (fetchError.message.includes('Failed to fetch') && navigator.onLine)
+                            )) {
+                                isCorsError = true;
+                                // Pour les erreurs CORS, on attend plus longtemps entre les tentatives
+                                if (attempt < maxRetries) {
+                                    container.innerHTML = `
+                                        <div class="col-span-full text-center text-slate-400 py-8">
+                                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                            <p>Chargement des cartes TCG... (tentative ${attempt + 1}/${maxRetries})</p>
+                                            <p class="text-xs text-slate-500 mt-2">Problème de connexion détecté, nouvelle tentative...</p>
+                                        </div>
+                                    `;
+                                    // Attendre plus longtemps pour CORS (5 secondes)
+                                    await new Promise(resolve => setTimeout(resolve, 5000));
+                                    break; // Sortir de la boucle des stratégies pour réessayer
+                                }
+                            }
+                            
+                            if (fetchError.name === 'AbortError' || fetchError.message === 'TIMEOUT_RETRY') {
+                                lastError = new Error(`Timeout après ${timeout/1000}s (tentative ${attempt}/${maxRetries})`);
+                                if (attempt < maxRetries) {
+                                    container.innerHTML = `
+                                        <div class="col-span-full text-center text-slate-400 py-8">
+                                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                            <p>Chargement des cartes TCG... (tentative ${attempt + 1}/${maxRetries})</p>
+                                            <p class="text-xs text-slate-500 mt-2">L'API est lente, nouvelle tentative...</p>
+                                        </div>
+                                    `;
+                                    // Attendre avant de réessayer
+                                    await new Promise(resolve => setTimeout(resolve, 3000));
+                                    break; // Sortir de la boucle des stratégies pour réessayer
+                                }
+                            }
+                            
+                            // Si c'est la dernière stratégie, propager l'erreur
+                            if (strategyIndex === searchStrategies.length - 1) {
+                                throw fetchError;
                             }
                         }
-                        throw fetchError;
-                    }
-                    
-                } catch (error) {
-                    lastError = error;
-                    console.error(`Tentative ${attempt}/${maxRetries} échouée:`, error);
-                    
-                    // Si c'est la dernière tentative, afficher l'erreur
-                    if (attempt === maxRetries) {
-                        let errorMessage = 'Impossible de charger les cartes TCG.';
-                        let errorDetails = '';
-                        
-                        if (isCorsError || (error.message && error.message.includes('Failed to fetch'))) {
-                            errorMessage = 'Erreur de connexion à l\'API Pokémon TCG';
-                            errorDetails = 'L\'API bloque parfois les requêtes depuis certains domaines (erreur CORS). Cela peut être temporaire. Les cartes en cache restent disponibles.';
-                        } else if (error.message && error.message.includes('Timeout')) {
-                            errorMessage = error.message;
-                            errorDetails = 'L\'API a pris trop de temps à répondre. Cela peut être dû à une surcharge temporaire du serveur.';
-                        } else if (error.message && error.message.includes('504')) {
-                            errorMessage = 'L\'API ne répond pas (Gateway Timeout)';
-                            errorDetails = 'Le serveur de l\'API est temporairement indisponible. Réessayez dans quelques instants.';
+                    } catch (strategyError) {
+                        // Si toutes les stratégies ont échoué pour cette tentative, continuer avec la prochaine tentative
+                        if (strategyIndex === searchStrategies.length - 1) {
+                            throw strategyError;
                         }
-                        
-                        container.innerHTML = `
-                            <div class="col-span-full text-center text-slate-400 py-8">
-                                <i class="fas fa-exclamation-triangle text-2xl mb-2 text-yellow-400"></i>
-                                <p class="font-semibold mb-2 text-white">${errorMessage}</p>
-                                <p class="text-xs text-slate-500 mb-4 max-w-md mx-auto">${errorDetails}</p>
-                                <p class="text-xs text-slate-600 mb-4">Tentatives effectuées: ${maxRetries}</p>
-                                <button onclick="loadTCGCards(currentPokemonForTCG)" class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors">
-                                    <i class="fas fa-redo mr-2"></i>Réessayer
-                                </button>
-                            </div>
-                        `;
                     }
                 }
+                
+                // Si toutes les stratégies ont été essayées pour cette tentative, continuer avec la prochaine
+                if (attempt < maxRetries) {
+                    container.innerHTML = `
+                        <div class="col-span-full text-center text-slate-400 py-8">
+                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                            <p>Chargement des cartes TCG... (tentative ${attempt + 1}/${maxRetries})</p>
+                            <p class="text-xs text-slate-500 mt-2">Nouvelle tentative avec différentes stratégies de recherche...</p>
+                        </div>
+                    `;
+                    // Attendre avant de réessayer
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                }
             }
+            
+            // Si on arrive ici, toutes les tentatives et stratégies ont échoué
+            let errorMessage = 'Aucune carte TCG trouvée';
+            let errorDetails = `Aucune carte trouvée pour ${pokemon.nameFR || englishName} après ${maxRetries} tentatives avec différentes stratégies de recherche.`;
+            
+            if (isCorsError) {
+                errorMessage = 'Erreur de connexion à l\'API Pokémon TCG';
+                errorDetails = 'L\'API bloque parfois les requêtes depuis certains domaines (erreur CORS). Cela peut être temporaire. Les cartes en cache restent disponibles.';
+            }
+            
+            container.innerHTML = `
+                <div class="col-span-full text-center text-slate-400 py-8">
+                    <i class="fas fa-exclamation-triangle text-2xl mb-2 text-yellow-400"></i>
+                    <p class="font-semibold mb-2 text-white">${errorMessage}</p>
+                    <p class="text-xs text-slate-500 mb-4 max-w-md mx-auto">${errorDetails}</p>
+                    <p class="text-xs text-slate-600 mb-4">Tentatives effectuées: ${maxRetries} × ${searchStrategies.length} stratégies</p>
+                    <button onclick="loadTCGCards(currentPokemonForTCG)" class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors">
+                        <i class="fas fa-redo mr-2"></i>Réessayer
+                    </button>
+                </div>
+            `;
         }
         
         // Get specific anecdotes for each Pokemon
