@@ -1174,89 +1174,132 @@
                 }
             }
             
-            try {
-                // Récupérer le nom anglais (l'API TCG fonctionne en anglais)
-                let englishName = pokemon.englishName || pokemon.name || pokemon.data?.name || '';
-                
-                // Nettoyage du nom pour l'API (par exemple pour "Nidoran♀" -> "Nidoran")
-                englishName = englishName.split('-')[0].replace(/[♂♀.]/g, '').trim();
-                
-                // Afficher le chargement
-                container.innerHTML = `
-                    <div class="col-span-full text-center text-slate-400 py-8">
-                        <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                        <p>Chargement des cartes TCG...</p>
-                    </div>
-                `;
-                
-                // Utilisation de l'API pokemontcg.io (même syntaxe que estimateur.html)
-                const apiUrl = `https://api.pokemontcg.io/v2/cards?q=name:${encodeURIComponent(englishName)}*&pageSize=50`;
-                
-                const response = await fetch(apiUrl, {
-                    headers: {
-                        'Accept': 'application/json'
+            // Récupérer le nom anglais (l'API TCG fonctionne en anglais)
+            let englishName = pokemon.englishName || pokemon.name || pokemon.data?.name || '';
+            
+            // Nettoyage du nom pour l'API (par exemple pour "Nidoran♀" -> "Nidoran")
+            englishName = englishName.split('-')[0].replace(/[♂♀.]/g, '').trim();
+            
+            // Afficher le chargement
+            container.innerHTML = `
+                <div class="col-span-full text-center text-slate-400 py-8">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                    <p>Chargement des cartes TCG... (cela peut prendre jusqu'à 1 minute)</p>
+                </div>
+            `;
+            
+            // Essayer plusieurs fois avec des timeouts progressifs
+            const maxRetries = 3;
+            let lastError = null;
+            
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                    // Utilisation de l'API pokemontcg.io
+                    const apiUrl = `https://api.pokemontcg.io/v2/cards?q=name:${encodeURIComponent(englishName)}*&pageSize=50`;
+                    
+                    // Timeout progressif : 30s, 45s, 60s
+                    const timeout = 30000 + (attempt - 1) * 15000;
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), timeout);
+                    
+                    try {
+                        const response = await fetch(apiUrl, {
+                            headers: {
+                                'Accept': 'application/json'
+                            },
+                            signal: controller.signal
+                        });
+                        
+                        clearTimeout(timeoutId);
+
+                        if (!response.ok) {
+                            throw new Error(`Erreur API: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+                        const cards = data.data || [];
+
+                        if (cards.length > 0) {
+                            // Formatage des données pour votre affichage existant
+                            const formattedCards = cards.map(card => ({
+                                id: card.id,
+                                name: card.name,
+                                image: card.images?.small,       // Image basse résolution
+                                imageLarge: card.images?.large,  // Image haute résolution
+                                set: card.set?.name,
+                                number: card.number,
+                                rarity: card.rarity
+                            })).filter(card => card.image); // On garde seulement ceux qui ont une image
+
+                            if (formattedCards.length > 0) {
+                                // Sauvegarde en cache
+                                saveTCGCache(cacheKey, formattedCards);
+                                allLoadedCards = formattedCards;
+                                // Affichage
+                                displayTCGCards(formattedCards, showAll);
+                                return; 
+                            }
+                        }
+                        
+                        // Si aucune carte trouvée
+                        container.innerHTML = `
+                            <div class="col-span-full text-center text-slate-400 py-8">
+                                <i class="fas fa-cards-blank text-4xl mb-4 opacity-50"></i>
+                                <p class="text-lg font-semibold mb-2">Aucune carte TCG trouvée</p>
+                                <p class="text-sm">Aucune carte trouvée pour ${pokemon.nameFR || englishName}.</p>
+                            </div>
+                        `;
+                        return;
+                        
+                    } catch (fetchError) {
+                        clearTimeout(timeoutId);
+                        if (fetchError.name === 'AbortError') {
+                            lastError = new Error(`Timeout après ${timeout/1000}s (tentative ${attempt}/${maxRetries})`);
+                            if (attempt < maxRetries) {
+                                // Continuer avec la tentative suivante
+                                continue;
+                            }
+                        }
+                        throw fetchError;
                     }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Erreur API: ${response.status}`);
-                }
-
-                const data = await response.json();
-                const cards = data.data || [];
-
-                if (cards.length > 0) {
-                    // Formatage des données pour votre affichage existant
-                    const formattedCards = cards.map(card => ({
-                        id: card.id,
-                        name: card.name,
-                        image: card.images?.small,       // Image basse résolution
-                        imageLarge: card.images?.large,  // Image haute résolution
-                        set: card.set?.name,
-                        number: card.number,
-                        rarity: card.rarity
-                    })).filter(card => card.image); // On garde seulement ceux qui ont une image
-
-                    if (formattedCards.length > 0) {
-                        // Sauvegarde en cache
-                        saveTCGCache(cacheKey, formattedCards);
-                        allLoadedCards = formattedCards;
-                        // Affichage
-                        displayTCGCards(formattedCards, showAll);
-                        return; 
+                    
+                } catch (error) {
+                    lastError = error;
+                    console.error(`Tentative ${attempt}/${maxRetries} échouée:`, error);
+                    
+                    // Si c'est la dernière tentative, afficher l'erreur
+                    if (attempt === maxRetries) {
+                        let errorMessage = 'Impossible de charger les cartes TCG.';
+                        if (error.message && error.message.includes('Failed to fetch')) {
+                            errorMessage = 'Erreur de connexion. Vérifiez votre connexion internet.';
+                        } else if (error.message && error.message.includes('CORS')) {
+                            errorMessage = 'Erreur CORS : Les cartes ne peuvent pas être chargées depuis localhost.';
+                        } else if (error.message && error.message.includes('Timeout')) {
+                            errorMessage = error.message;
+                        }
+                        
+                        container.innerHTML = `
+                            <div class="col-span-full text-center text-slate-400 py-8">
+                                <i class="fas fa-exclamation-triangle text-2xl mb-2 text-yellow-400"></i>
+                                <p class="font-semibold mb-2">${errorMessage}</p>
+                                <p class="text-xs text-slate-500 mb-4">Tentatives: ${maxRetries}. Si vous êtes en localhost, les cartes peuvent ne pas se charger à cause des restrictions CORS.</p>
+                                <button onclick="loadTCGCards(currentPokemonForTCG)" class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors">
+                                    <i class="fas fa-redo mr-2"></i>Réessayer
+                                </button>
+                            </div>
+                        `;
+                    } else {
+                        // Afficher qu'on réessaie
+                        container.innerHTML = `
+                            <div class="col-span-full text-center text-slate-400 py-8">
+                                <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                <p>Chargement des cartes TCG... (tentative ${attempt + 1}/${maxRetries})</p>
+                            </div>
+                        `;
+                        // Attendre un peu avant de réessayer
+                        await new Promise(resolve => setTimeout(resolve, 2000));
                     }
                 }
-                
-                // Si aucune carte trouvée
-                container.innerHTML = `
-                    <div class="col-span-full text-center text-slate-400 py-8">
-                        <i class="fas fa-cards-blank text-4xl mb-4 opacity-50"></i>
-                        <p class="text-lg font-semibold mb-2">Aucune carte TCG trouvée</p>
-                        <p class="text-sm">Aucune carte trouvée pour ${pokemon.nameFR || englishName}.</p>
-                    </div>
-                `;
-                
-            } catch (error) {
-                console.error('Erreur lors du chargement des cartes TCG:', error);
-                
-                // Si erreur CORS ou réseau, afficher un message avec option de réessayer
-                let errorMessage = 'Impossible de charger les cartes TCG.';
-                if (error.message && error.message.includes('Failed to fetch')) {
-                    errorMessage = 'Erreur de connexion. Vérifiez votre connexion internet.';
-                } else if (error.message && error.message.includes('CORS')) {
-                    errorMessage = 'Erreur CORS : Les cartes ne peuvent pas être chargées depuis localhost.';
-                }
-                
-                container.innerHTML = `
-                    <div class="col-span-full text-center text-slate-400 py-8">
-                        <i class="fas fa-exclamation-triangle text-2xl mb-2 text-yellow-400"></i>
-                        <p class="font-semibold mb-2">${errorMessage}</p>
-                        <p class="text-xs text-slate-500 mb-4">Si vous êtes en localhost, les cartes peuvent ne pas se charger à cause des restrictions CORS.</p>
-                        <button onclick="loadTCGCards(currentPokemonForTCG)" class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors">
-                            <i class="fas fa-redo mr-2"></i>Réessayer
-                        </button>
-                    </div>
-                `;
             }
         }
         
