@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dresseurs Emblématiques - Pokémon Community</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+        }
+        .trainer-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .trainer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover {
+            color: #fbbf24;
+            transform: translateY(-2px);
+        }
+        .generation-tab {
+            transition: all 0.3s ease;
+        }
+        .generation-tab.active {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: white;
+        }
+        .tcg-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .tcg-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+        .scroll-reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .lore-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #fbbf24;
+        }
+        .anecdote-item {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 3px solid #3b82f6;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-bolt text-white text-sm"></i>
+                    </div>
+                    <span class="text-xl font-bold text-white">Pokémon Community</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="index.html" class="nav-link text-slate-300 hover:text-white font-medium">Accueil</a>
+                    <a href="index.html" class="nav-link text-slate-300 hover:text-white font-medium">Sailor Mélo</a>
+                    <a href="pokedex.html" class="nav-link text-slate-300 hover:text-white font-medium">Pokédex</a>
+                    <a href="dresseurs.html" class="nav-link text-white font-medium">Dresseurs</a>
+                    <a href="forum.html" class="nav-link text-slate-300 hover:text-white font-medium">Forum</a>
+                    <a href="calendrier.html" class="nav-link text-slate-300 hover:text-white font-medium">Calendrier</a>
+                    <a href="quiz.html" class="nav-link text-slate-300 hover:text-white font-medium">Quiz</a>
+                    <a href="estimateur.html" class="nav-link text-slate-300 hover:text-white font-medium">Estimateur</a>
+                    <a href="collection.html" class="nav-link text-slate-300 hover:text-white font-medium">Classeur</a>
+                    <a href="wishlist.html" class="nav-link text-slate-300 hover:text-white font-medium">Wishlist</a>
+                </div>
+                <div class="md:hidden">
+                    <button class="text-white">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-24 pb-12 bg-gradient-to-b from-slate-900 to-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-5xl md:text-7xl font-black text-white mb-6">
+                <span class="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
+                    Dresseurs Emblématiques
+                </span>
+            </h1>
+            <p class="text-xl text-slate-300 max-w-3xl mx-auto">
+                Découvrez l'histoire, le lore et les anecdotes des dresseurs légendaires de chaque génération Pokémon
+            </p>
+        </div>
+    </section>
+
+    <!-- Generation Tabs -->
+    <section class="py-8 bg-slate-800/50 sticky top-16 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap justify-center gap-4">
+                <button onclick="showGeneration(1)" class="generation-tab active px-6 py-3 rounded-full text-white font-semibold bg-slate-700 hover:bg-slate-600">
+                    Génération 1 - Kanto
+                </button>
+                <button onclick="showGeneration(2)" class="generation-tab px-6 py-3 rounded-full text-white font-semibold bg-slate-700 hover:bg-slate-600">
+                    Génération 2 - Johto
+                </button>
+                <button onclick="showGeneration(3)" class="generation-tab px-6 py-3 rounded-full text-white font-semibold bg-slate-700 hover:bg-slate-600">
+                    Génération 3 - Hoenn
+                </button>
+                <button onclick="showGeneration(4)" class="generation-tab px-6 py-3 rounded-full text-white font-semibold bg-slate-700 hover:bg-slate-600">
+                    Génération 4 - Sinnoh
+                </button>
+                <button onclick="showGeneration(5)" class="generation-tab px-6 py-3 rounded-full text-white font-semibold bg-slate-700 hover:bg-slate-600">
+                    Génération 5 - Unys
+                </button>
+                <button onclick="showGeneration(6)" class="generation-tab px-6 py-3 rounded-full text-white font-semibold bg-slate-700 hover:bg-slate-600">
+                    Génération 6 - Kalos
+                </button>
+                <button onclick="showGeneration(7)" class="generation-tab px-6 py-3 rounded-full text-white font-semibold bg-slate-700 hover:bg-slate-600">
+                    Génération 7 - Alola
+                </button>
+                <button onclick="showGeneration(8)" class="generation-tab px-6 py-3 rounded-full text-white font-semibold bg-slate-700 hover:bg-slate-600">
+                    Génération 8 - Galar
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trainers Content -->
+    <section class="py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div id="trainers-content">
+                <!-- Content will be dynamically loaded -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-700 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <div class="flex items-center justify-center space-x-2 mb-4">
+                    <div class="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-bolt text-white text-sm"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-white">Pokémon Community</span>
+                </div>
+                <p class="text-slate-400 mb-6">La communauté ultime pour les fans de Pokémon</p>
+                <p class="text-slate-500 text-sm">© 2025 Pokémon Community. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Database des dresseurs par génération
+        const trainersDatabase = {
+            1: [
+                {
+                    name: "Professeur Chen",
+                    nameEN: "Professor Oak",
+                    role: "Chercheur Pokémon",
+                    location: "Bourg Palette",
+                    specialty: "Recherche Pokémon",
+                    history: "Le Professeur Chen est le chercheur Pokémon le plus respecté de la région de Kanto. Il a consacré sa vie à l'étude des Pokémon et offre aux jeunes dresseurs leur premier Pokémon. Il est également le grand-père de Régis, le rival du protagoniste.",
+                    lore: "Le Professeur Chen est connu pour son Pokédex, un appareil révolutionnaire qui enregistre les données de tous les Pokémon rencontrés. Il a été le mentor de nombreux dresseurs légendaires et continue d'aider les nouvelles générations à comprendre le monde des Pokémon.",
+                    anecdotes: [
+                        "Le Professeur Chen a été le premier à créer le système de Pokédex électronique.",
+                        "Il a découvert plusieurs espèces de Pokémon rares dans la région de Kanto.",
+                        "Dans les jeux, il offre le choix entre Bulbizarre, Salamèche et Carapuce.",
+                        "Il est souvent considéré comme le père de la recherche Pokémon moderne."
+                    ],
+                    tcgCards: ["Professor Oak", "Professor Oak's Research", "Professor Oak's Setup"]
+                },
+                {
+                    name: "Pierre",
+                    nameEN: "Brock",
+                    role: "Champion d'Arène",
+                    location: "Argenta",
+                    specialty: "Pokémon de type Roche",
+                    history: "Pierre est le Champion d'Arène d'Argenta, spécialisé dans les Pokémon de type Roche. Il est également un excellent cuisinier et prend soin de ses nombreux frères et sœurs. Il rêve de devenir le meilleur éleveur de Pokémon au monde.",
+                    lore: "Pierre est connu pour sa passion pour les roches et les fossiles. Il a une connaissance approfondie des Pokémon de type Roche et peut identifier n'importe quelle pierre précieuse. Malgré sa jeunesse, il est très responsable et mature.",
+                    anecdotes: [
+                        "Pierre a 9 frères et sœurs qu'il élève seul depuis la disparition de son père.",
+                        "Il est un expert en cuisine Pokémon et prépare des repas nutritifs.",
+                        "Dans l'anime, il voyage avec Sacha et Ondine pendant plusieurs saisons.",
+                        "Il a un Onix et un Golem dans son équipe principale."
+                    ],
+                    tcgCards: ["Brock", "Brock's Grit", "Brock's Training Method"]
+                },
+                {
+                    name: "Ondine",
+                    nameEN: "Misty",
+                    role: "Championne d'Arène",
+                    location: "Azuria",
+                    specialty: "Pokémon de type Eau",
+                    history: "Ondine est la Championne d'Arène d'Azuria, spécialisée dans les Pokémon de type Eau. Elle est énergique, déterminée et a un fort caractère. Elle a une passion pour les Pokémon aquatiques et rêve de devenir Maître Pokémon.",
+                    lore: "Ondine est la plus jeune des quatre sœurs qui dirigent l'Arène d'Azuria. Elle est souvent frustrée par ses sœurs qui préfèrent la beauté à la force. Elle a un lien spécial avec ses Pokémon de type Eau, notamment son Lézardou.",
+                    anecdotes: [
+                        "Ondine a un Lézardou qui refuse d'évoluer en Lézard.",
+                        "Elle déteste les Pokémon de type Insecte et Plante.",
+                        "Dans l'anime, elle voyage avec Sacha et Pierre pendant plusieurs saisons.",
+                        "Elle est une excellente nageuse et peut rester sous l'eau très longtemps."
+                    ],
+                    tcgCards: ["Misty", "Misty's Determination", "Misty's Favor"]
+                },
+                {
+                    name: "Régis",
+                    nameEN: "Gary Oak",
+                    role: "Rival",
+                    location: "Bourg Palette",
+                    specialty: "Divers",
+                    history: "Régis est le petit-fils du Professeur Chen et le rival principal du protagoniste. Au début, il est arrogant et méprisant, mais il évolue au fil de l'aventure pour devenir un dresseur respectueux et puissant.",
+                    lore: "Régis commence son aventure avec un Pokémon de type différent de celui du protagoniste. Il collectionne rapidement 10 badges et devient un chercheur Pokémon, suivant les traces de son grand-père. Il finit par comprendre que la force ne vient pas seulement de la puissance, mais aussi du lien avec ses Pokémon.",
+                    anecdotes: [
+                        "Régis a une voiture de sport et un groupe de filles qui le suivent partout.",
+                        "Il collectionne les badges plus rapidement que le protagoniste.",
+                        "Il devient chercheur Pokémon après sa défaite contre le protagoniste.",
+                        "Il a un Évoli qui évolue en Aquali dans certains jeux."
+                    ],
+                    tcgCards: ["Gary"]
+                }
+            ],
+            2: [
+                {
+                    name: "Jasmine",
+                    nameEN: "Jasmine",
+                    role: "Championne d'Arène",
+                    location: "Oliville",
+                    specialty: "Pokémon de type Acier",
+                    history: "Jasmine est la Championne d'Arène d'Oliville, spécialisée dans les Pokémon de type Acier. Elle est douce, timide mais très déterminée. Elle a un lien spécial avec les Pokémon de type Acier, notamment son Magnéti.",
+                    lore: "Jasmine est connue pour sa gentillesse et sa patience. Elle prend soin des Pokémon malades et blessés. Elle a découvert sa passion pour les Pokémon de type Acier en soignant un Magnéti malade. Elle est également une excellente amie avec le Professeur Orme.",
+                    anecdotes: [
+                        "Jasmine a un Magnéti qui était malade et qu'elle a soigné avec amour.",
+                        "Elle est très timide mais devient confiante lorsqu'elle combat.",
+                        "Elle est la seule Championne d'Arène de Johto spécialisée dans un seul type.",
+                        "Dans certains jeux, elle aide le protagoniste à soigner un Pokémon malade."
+                    ],
+                    tcgCards: ["Jasmine"]
+                },
+                {
+                    name: "Silver",
+                    nameEN: "Silver",
+                    role: "Rival",
+                    location: "Johto",
+                    specialty: "Divers",
+                    history: "Silver est le rival du protagoniste dans les jeux de la génération 2. Il est initialement arrogant et cruel envers les Pokémon, mais il évolue au fil de l'aventure pour comprendre l'importance du lien entre dresseur et Pokémon.",
+                    lore: "Silver est en fait le fils de Giovanni, le leader de la Team Rocket. Il a été abandonné par son père et a développé une haine envers les dresseurs qui maltraitent leurs Pokémon. Il finit par comprendre que la vraie force vient du respect mutuel.",
+                    anecdotes: [
+                        "Silver vole un Pokémon au début de l'aventure (un starter).",
+                        "Il est le fils de Giovanni, le leader de la Team Rocket.",
+                        "Il change d'attitude après avoir été battu plusieurs fois.",
+                        "Il finit par libérer son Pokémon volé et en choisit un nouveau."
+                    ],
+                    tcgCards: []
+                }
+            ],
+            3: [
+                {
+                    name: "Pierre Rochard",
+                    nameEN: "Steven Stone",
+                    role: "Maître de la Ligue",
+                    location: "Pacifidlog",
+                    specialty: "Pokémon de type Acier et Roche",
+                    history: "Pierre Rochard est le Maître de la Ligue Pokémon de Hoenn et le fils du président de la Devon Corporation. Il est passionné par les pierres rares et les Pokémon de type Acier. Il est calme, réfléchi et très puissant.",
+                    lore: "Pierre Rochard est un collectionneur de pierres rares et un expert en minéralogie. Il voyage à travers Hoenn pour trouver des pierres précieuses et des fossiles. Il a un lien spécial avec son Métalosse, qu'il a trouvé dans une grotte. Il aide le protagoniste à plusieurs reprises dans sa quête.",
+                    anecdotes: [
+                        "Pierre Rochard est le fils du président de la Devon Corporation.",
+                        "Il collectionne les pierres rares et les fossiles.",
+                        "Il a un Métalosse qu'il a trouvé dans une grotte.",
+                        "Il devient le Maître de la Ligue après avoir battu le précédent champion."
+                    ],
+                    tcgCards: ["Steven", "Steven's Resolve", "Steven's Advice"]
+                },
+                {
+                    name: "Flora",
+                    nameEN: "May",
+                    role: "Rivale/Compagne",
+                    location: "Bourg-en-Vol",
+                    specialty: "Divers",
+                    history: "Flora est la fille du Professeur Seko et la rivale/compagne du protagoniste dans les jeux de Hoenn. Elle est énergique, optimiste et aime voyager. Elle devient une Coordinatrice Pokémon dans l'anime.",
+                    lore: "Flora commence son aventure en recevant un Pokémon du Professeur Seko. Elle voyage à travers Hoenn pour devenir une dresseuse accomplie. Dans l'anime, elle se spécialise dans les Concours Pokémon et devient une Coordinatrice talentueuse.",
+                    anecdotes: [
+                        "Flora est la fille du Professeur Seko.",
+                        "Elle devient Coordinatrice Pokémon dans l'anime.",
+                        "Elle a un Nénupiot qui évolue en Jugeote.",
+                        "Elle est très amie avec le protagoniste et l'aide dans sa quête."
+                    ],
+                    tcgCards: ["May"]
+                }
+            ],
+            4: [
+                {
+                    name: "Cynthia",
+                    nameEN: "Cynthia",
+                    role: "Maîtresse de la Ligue",
+                    location: "Joliberges",
+                    specialty: "Équipe équilibrée",
+                    history: "Cynthia est la Maîtresse de la Ligue Pokémon de Sinnoh, considérée comme l'une des champions les plus puissants de l'histoire. Elle est calme, intelligente et a une connaissance approfondie de la mythologie Pokémon. Elle possède une équipe redoutable et équilibrée.",
+                    lore: "Cynthia est une chercheuse passionnée par l'histoire et la mythologie de Sinnoh. Elle étudie les légendes des Pokémon légendaires, notamment Dialga, Palkia et Giratina. Elle aide le protagoniste à comprendre les mystères de la région et à empêcher l'équipe Galaxie de détruire le monde.",
+                    anecdotes: [
+                        "Cynthia possède un Garchomp, l'un des Pokémon les plus puissants de Sinnoh.",
+                        "Elle est considérée comme la championne la plus difficile à battre de toute la série.",
+                        "Elle étudie la mythologie Pokémon et connaît les légendes de Sinnoh.",
+                        "Elle apparaît dans plusieurs générations suivantes pour aider le protagoniste."
+                    ],
+                    tcgCards: ["Cynthia", "Cynthia's Ambition", "Cynthia's Feelings", "Cynthia's Guidance"]
+                },
+                {
+                    name: "Aurore",
+                    nameEN: "Dawn",
+                    role: "Compagne",
+                    location: "Bourg-en-Vol",
+                    specialty: "Divers",
+                    history: "Aurore est la compagne du protagoniste dans les jeux de Sinnoh. Elle est énergique, optimiste et rêve de devenir une Coordinatrice Pokémon. Elle voyage à travers Sinnoh pour participer aux Concours Pokémon.",
+                    lore: "Aurore commence son aventure en recevant un Pokémon du Professeur Sorbier. Elle se spécialise dans les Concours Pokémon et devient une Coordinatrice talentueuse. Elle a un lien spécial avec son Évoli, qu'elle utilise dans les concours.",
+                    anecdotes: [
+                        "Aurore est une Coordinatrice Pokémon talentueuse.",
+                        "Elle a un Évoli qui peut évoluer en plusieurs formes.",
+                        "Elle participe aux Concours Pokémon à travers Sinnoh.",
+                        "Elle est très amie avec le protagoniste et l'aide dans sa quête."
+                    ],
+                    tcgCards: ["Dawn"]
+                }
+            ],
+            5: [
+                {
+                    name: "Ghetis",
+                    nameEN: "Ghetsis",
+                    role: "Leader de la Team Plasma",
+                    location: "Unys",
+                    specialty: "Manipulation",
+                    history: "Ghetis est le leader de la Team Plasma, une organisation qui prétend vouloir libérer les Pokémon de leurs dresseurs. En réalité, il manipule N et la Team Plasma pour ses propres objectifs égoïstes. Il est l'un des antagonistes les plus dangereux de la série.",
+                    lore: "Ghetis est un manipulateur expert qui utilise la Team Plasma pour voler les Pokémon des dresseurs. Il prétend vouloir libérer les Pokémon, mais en réalité, il veut contrôler tous les Pokémon pour dominer le monde. Il a élevé N depuis l'enfance pour en faire un outil de ses plans.",
+                    anecdotes: [
+                        "Ghetis est le vrai leader de la Team Plasma, pas N.",
+                        "Il a élevé N depuis l'enfance pour en faire un outil.",
+                        "Il possède un Hydragon, l'un des Pokémon les plus puissants d'Unys.",
+                        "Il est l'un des antagonistes les plus dangereux et manipulateurs de la série."
+                    ],
+                    tcgCards: ["Ghetsis"]
+                },
+                {
+                    name: "N",
+                    nameEN: "N",
+                    role: "Rival/Protagoniste",
+                    location: "Unys",
+                    specialty: "Divers",
+                    history: "N est un personnage complexe qui croit que les Pokémon doivent être libérés de leurs dresseurs. Il est le 'roi' de la Team Plasma, mais il ignore que Ghetis le manipule. Il finit par comprendre la vérité et change d'avis sur le lien entre dresseurs et Pokémon.",
+                    lore: "N a été élevé par Ghetis depuis l'enfance et a développé la capacité de communiquer avec les Pokémon. Il croit sincèrement que les Pokémon sont maltraités par les dresseurs, mais il finit par comprendre que le lien entre dresseur et Pokémon peut être bénéfique pour les deux.",
+                    anecdotes: [
+                        "N peut communiquer avec les Pokémon.",
+                        "Il a été élevé par Ghetis depuis l'enfance.",
+                        "Il possède un Zekrom ou un Reshiram selon la version du jeu.",
+                        "Il finit par comprendre que le lien dresseur-Pokémon peut être positif."
+                    ],
+                    tcgCards: ["N"]
+                }
+            ],
+            6: [
+                {
+                    name: "Lysandre",
+                    nameEN: "Lysandre",
+                    role: "Leader de la Team Flare",
+                    location: "Kalos",
+                    specialty: "Divers",
+                    history: "Lysandre est le leader de la Team Flare, une organisation qui veut créer un 'monde parfait' en éliminant ceux qu'ils considèrent comme indésirables. Il est charismatique, riche et possède une technologie avancée. Il est obsédé par la beauté et la perfection.",
+                    lore: "Lysandre est le fondateur de la Team Flare et le propriétaire de la société Lysandre Labs. Il a développé une technologie qui peut contrôler les Pokémon légendaires. Il veut utiliser cette technologie pour créer un monde parfait, mais ses méthodes sont extrêmes et dangereuses.",
+                    anecdotes: [
+                        "Lysandre est le fondateur de la Team Flare et de Lysandre Labs.",
+                        "Il possède une technologie avancée pour contrôler les Pokémon légendaires.",
+                        "Il veut créer un 'monde parfait' en éliminant ceux qu'il considère indésirables.",
+                        "Il est obsédé par la beauté et la perfection."
+                    ],
+                    tcgCards: ["Lysandre", "Lysandre's Trump Card"]
+                },
+                {
+                    name: "Sannah",
+                    nameEN: "Serena",
+                    role: "Rivale/Compagne",
+                    location: "Bourg-en-Vol",
+                    specialty: "Divers",
+                    history: "Sannah est la rivale/compagne du protagoniste dans les jeux de Kalos. Elle est énergique, joyeuse et rêve de devenir une dresseuse accomplie. Elle voyage à travers Kalos pour améliorer ses compétences.",
+                    lore: "Sannah commence son aventure en recevant un Pokémon du Professeur Platane. Elle voyage à travers Kalos pour devenir une dresseuse accomplie. Dans l'anime, elle devient une Performeuse Pokémon et participe aux Spectacles Pokémon.",
+                    anecdotes: [
+                        "Sannah est une Performeuse Pokémon dans l'anime.",
+                        "Elle participe aux Spectacles Pokémon à travers Kalos.",
+                        "Elle a un Félinferno qu'elle utilise dans les spectacles.",
+                        "Elle est très amie avec le protagoniste et l'aide dans sa quête."
+                    ],
+                    tcgCards: ["Serena"]
+                }
+            ],
+            7: [
+                {
+                    name: "Lilith",
+                    nameEN: "Lusamine",
+                    role: "Présidente de la Fondation Æther",
+                    location: "Alola",
+                    specialty: "Divers",
+                    history: "Lilith est la présidente de la Fondation Æther, une organisation qui protège les Pokémon. Cependant, elle est obsédée par les Ultra-Chimères et veut les préserver dans des cristaux. Elle finit par fusionner avec une Ultra-Chimère et devient dangereuse.",
+                    lore: "Lilith est une mère qui a perdu son mari dans une dimension alternative. Elle est devenue obsédée par les Ultra-Chimères et veut les préserver pour l'éternité. Elle finit par fusionner avec une Ultra-Chimère et doit être sauvée par le protagoniste.",
+                    anecdotes: [
+                        "Lilith est la présidente de la Fondation Æther.",
+                        "Elle est la mère de Lilie et Gladio.",
+                        "Elle est obsédée par les Ultra-Chimères.",
+                        "Elle finit par fusionner avec une Ultra-Chimère et devient dangereuse."
+                    ],
+                    tcgCards: ["Lusamine"]
+                },
+                {
+                    name: "Gladio",
+                    nameEN: "Gladion",
+                    role: "Rival",
+                    location: "Alola",
+                    specialty: "Divers",
+                    history: "Gladio est le fils de Lilith et le frère de Lilie. Il a quitté la Fondation Æther pour protéger son Type:Null. Il est solitaire, déterminé et possède un fort sens de la justice. Il aide le protagoniste à arrêter sa mère.",
+                    lore: "Gladio a quitté la Fondation Æther car il ne supportait pas les expériences de sa mère sur les Pokémon. Il a volé un Type:Null pour le protéger et voyage à travers Alola pour devenir plus fort. Il finit par aider le protagoniste à sauver sa mère.",
+                    anecdotes: [
+                        "Gladio est le fils de Lilith et le frère de Lilie.",
+                        "Il a quitté la Fondation Æther pour protéger son Type:Null.",
+                        "Il possède un Type:Null qui peut évoluer en Silvallié.",
+                        "Il aide le protagoniste à arrêter sa mère."
+                    ],
+                    tcgCards: ["Gladion"]
+                }
+            ],
+            8: [
+                {
+                    name: "Rose",
+                    nameEN: "Chairman Rose",
+                    role: "Président de la Ligue",
+                    location: "Galar",
+                    specialty: "Divers",
+                    history: "Rose est le président de la Ligue Pokémon de Galar et le propriétaire de Macro Cosmos. Il semble bienveillant au début, mais cache des intentions dangereuses. Il veut réveiller Éthernatos pour résoudre une crise énergétique future, même si cela met le monde en danger.",
+                    lore: "Rose est un homme d'affaires puissant qui a construit l'infrastructure de Galar. Il est obsédé par l'idée de résoudre une crise énergétique future et veut réveiller Éthernatos, même si cela met le monde en danger. Il finit par être arrêté par le protagoniste.",
+                    anecdotes: [
+                        "Rose est le président de la Ligue Pokémon de Galar.",
+                        "Il est le propriétaire de Macro Cosmos.",
+                        "Il veut réveiller Éthernatos pour résoudre une crise énergétique future.",
+                        "Il cache des intentions dangereuses sous une apparence bienveillante."
+                    ],
+                    tcgCards: ["Chairman Rose"]
+                },
+                {
+                    name: "Nabil",
+                    nameEN: "Hop",
+                    role: "Rival",
+                    location: "Bourg-en-Vol",
+                    specialty: "Divers",
+                    history: "Nabil est le frère cadet de Léon, le Champion de Galar, et le rival du protagoniste. Il est énergique, optimiste et rêve de devenir Champion comme son frère. Il commence avec un starter et voyage à travers Galar pour améliorer ses compétences.",
+                    lore: "Nabil vit dans l'ombre de son frère Léon, le Champion invaincu de Galar. Il veut prouver qu'il peut être aussi fort que son frère et devenir Champion. Il finit par comprendre que sa vraie passion est la recherche Pokémon et devient l'assistant du Professeur Sorbier.",
+                    anecdotes: [
+                        "Nabil est le frère cadet de Léon, le Champion de Galar.",
+                        "Il commence avec un starter et voyage à travers Galar.",
+                        "Il finit par devenir l'assistant du Professeur Sorbier.",
+                        "Il comprend que sa vraie passion est la recherche Pokémon."
+                    ],
+                    tcgCards: ["Hop"]
+                }
+            ]
+        };
+
+        let currentGeneration = 1;
+        let trainerCardsCache = new Map();
+
+        function showGeneration(gen) {
+            currentGeneration = gen;
+            
+            // Update active tab
+            document.querySelectorAll('.generation-tab').forEach((tab, index) => {
+                tab.classList.remove('active');
+                if (index === gen - 1) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            // Load trainers for this generation
+            loadTrainers(gen);
+        }
+
+        function loadTrainers(gen) {
+            const content = document.getElementById('trainers-content');
+            const trainers = trainersDatabase[gen] || [];
+            
+            if (trainers.length === 0) {
+                content.innerHTML = `
+                    <div class="text-center text-slate-400 py-12">
+                        <i class="fas fa-users text-4xl mb-4 opacity-50"></i>
+                        <p class="text-lg">Aucun dresseur disponible pour cette génération.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            content.innerHTML = trainers.map((trainer, index) => `
+                <div class="trainer-card rounded-2xl p-8 mb-8 scroll-reveal" style="animation-delay: ${index * 0.1}s">
+                    <div class="flex flex-col md:flex-row gap-8">
+                        <!-- Trainer Info -->
+                        <div class="flex-1">
+                            <div class="flex items-center gap-4 mb-6">
+                                <div class="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-white text-3xl"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-3xl font-bold text-white mb-2">${trainer.name}</h2>
+                                    <p class="text-slate-400">${trainer.role} • ${trainer.location}</p>
+                                    <p class="text-slate-500 text-sm mt-1">Spécialité: ${trainer.specialty}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- History -->
+                            <div class="mb-6">
+                                <h3 class="text-xl font-bold text-white mb-3 flex items-center">
+                                    <i class="fas fa-book mr-2 text-yellow-400"></i>
+                                    Histoire
+                                </h3>
+                                <p class="text-slate-300 leading-relaxed">${trainer.history}</p>
+                            </div>
+                            
+                            <!-- Lore -->
+                            <div class="lore-section p-4 rounded-lg mb-6">
+                                <h3 class="text-xl font-bold text-white mb-3 flex items-center">
+                                    <i class="fas fa-scroll mr-2 text-yellow-400"></i>
+                                    Lore
+                                </h3>
+                                <p class="text-slate-300 leading-relaxed">${trainer.lore}</p>
+                            </div>
+                            
+                            <!-- Anecdotes -->
+                            <div class="mb-6">
+                                <h3 class="text-xl font-bold text-white mb-3 flex items-center">
+                                    <i class="fas fa-lightbulb mr-2 text-yellow-400"></i>
+                                    Anecdotes
+                                </h3>
+                                <div class="space-y-2">
+                                    ${trainer.anecdotes.map(anecdote => `
+                                        <div class="anecdote-item p-3 rounded-lg">
+                                            <p class="text-slate-300 text-sm">• ${anecdote}</p>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- TCG Cards Section -->
+                        <div class="md:w-1/3">
+                            <h3 class="text-xl font-bold text-white mb-4 flex items-center">
+                                <i class="fas fa-cards-blank mr-2 text-yellow-400"></i>
+                                Cartes TCG
+                            </h3>
+                            <div id="tcg-cards-${gen}-${index}" class="space-y-4">
+                                <div class="text-center text-slate-400 py-4">
+                                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                    <p class="text-sm">Chargement des cartes...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Load TCG cards for each trainer
+            trainers.forEach((trainer, index) => {
+                if (trainer.tcgCards && trainer.tcgCards.length > 0) {
+                    loadTrainerTCGCards(trainer, gen, index);
+                } else {
+                    document.getElementById(`tcg-cards-${gen}-${index}`).innerHTML = `
+                        <div class="text-center text-slate-500 py-4">
+                            <i class="fas fa-info-circle text-xl mb-2"></i>
+                            <p class="text-sm">Aucune carte TCG disponible pour ce dresseur.</p>
+                        </div>
+                    `;
+                }
+            });
+            
+            // Reveal animations
+            setTimeout(() => {
+                document.querySelectorAll('.scroll-reveal').forEach(el => {
+                    el.classList.add('revealed');
+                });
+            }, 100);
+        }
+
+        async function loadTrainerTCGCards(trainer, gen, index) {
+            const container = document.getElementById(`tcg-cards-${gen}-${index}`);
+            const cacheKey = `${trainer.nameEN}-${gen}`;
+            
+            // Check cache
+            if (trainerCardsCache.has(cacheKey)) {
+                displayTrainerTCGCards(container, trainerCardsCache.get(cacheKey));
+                return;
+            }
+            
+            // Try to load cards for each TCG card name with retry logic
+            const allCards = [];
+            const maxRetries = 3;
+            
+            for (const cardName of trainer.tcgCards) {
+                let success = false;
+                
+                for (let attempt = 1; attempt <= maxRetries && !success; attempt++) {
+                    try {
+                        const apiUrl = `https://api.pokemontcg.io/v2/cards?q=name:"${encodeURIComponent(cardName)}"&pageSize=10`;
+                        const timeout = 20000 + (attempt - 1) * 10000; // 20s, 30s, 40s
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), timeout);
+                        
+                        try {
+                            const response = await fetch(apiUrl, {
+                                headers: { 'Accept': 'application/json' },
+                                signal: controller.signal,
+                                mode: 'cors',
+                                cache: attempt === 1 ? 'default' : 'no-cache'
+                            });
+                            
+                            clearTimeout(timeoutId);
+                            
+                            if (response.ok) {
+                                const data = await response.json();
+                                if (data.data && data.data.length > 0) {
+                                    allCards.push(...data.data);
+                                    success = true;
+                                }
+                            } else if (response.status === 504 && attempt < maxRetries) {
+                                // Gateway timeout - retry
+                                await new Promise(resolve => setTimeout(resolve, 3000));
+                                continue;
+                            }
+                        } catch (fetchError) {
+                            clearTimeout(timeoutId);
+                            
+                            // Détecter erreurs CORS
+                            if (fetchError.message && (
+                                fetchError.message.includes('CORS') || 
+                                fetchError.message.includes('Access-Control-Allow-Origin') ||
+                                fetchError.message.includes('Failed to fetch')
+                            )) {
+                                if (attempt < maxRetries) {
+                                    // Attendre plus longtemps pour CORS
+                                    await new Promise(resolve => setTimeout(resolve, 5000));
+                                    continue;
+                                }
+                            }
+                            
+                            // Pour timeout, réessayer
+                            if (fetchError.name === 'AbortError' && attempt < maxRetries) {
+                                await new Promise(resolve => setTimeout(resolve, 3000));
+                                continue;
+                            }
+                            
+                            // Sinon, passer à la carte suivante
+                            break;
+                        }
+                    } catch (error) {
+                        // Erreur générale, passer à la carte suivante
+                        break;
+                    }
+                }
+            }
+            
+            if (allCards.length > 0) {
+                trainerCardsCache.set(cacheKey, allCards);
+                displayTrainerTCGCards(container, allCards);
+            } else {
+                container.innerHTML = `
+                    <div class="text-center text-slate-500 py-4">
+                        <i class="fas fa-info-circle text-xl mb-2"></i>
+                        <p class="text-sm">Aucune carte TCG trouvée pour ce dresseur.</p>
+                        <p class="text-xs text-slate-600 mt-1">Cela peut être dû à une erreur CORS temporaire.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayTrainerTCGCards(container, cards) {
+            // Remove duplicates by card ID
+            const uniqueCards = Array.from(new Map(cards.map(card => [card.id, card])).values());
+            
+            container.innerHTML = `
+                <div class="grid grid-cols-2 gap-3">
+                    ${uniqueCards.slice(0, 6).map(card => `
+                        <div class="tcg-card rounded-lg p-2 cursor-pointer" onclick="window.open('${card.images?.large || card.images?.small}', '_blank')">
+                            <img src="${card.images?.small || ''}" 
+                                 alt="${card.name}" 
+                                 class="w-full h-auto rounded"
+                                 onerror="this.src='https://via.placeholder.com/245x342/1e293b/ffffff?text=${encodeURIComponent(card.name)}'">
+                            <p class="text-white text-xs mt-2 truncate">${card.name}</p>
+                            <p class="text-slate-400 text-xs">${card.set?.name || ''}</p>
+                        </div>
+                    `).join('')}
+                </div>
+                ${uniqueCards.length > 6 ? `
+                    <p class="text-slate-400 text-xs text-center mt-2">+ ${uniqueCards.length - 6} autres cartes</p>
+                ` : ''}
+            `;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTrainers(1);
+            
+            // Scroll reveal
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('revealed');
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            document.querySelectorAll('.scroll-reveal').forEach(el => {
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>
+

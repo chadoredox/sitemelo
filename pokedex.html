@@ -113,6 +113,7 @@
                     <a href="index.html" class="nav-link text-slate-300 hover:text-white font-medium">Accueil</a>
                     <a href="index.html" class="nav-link text-slate-300 hover:text-white font-medium">Sailor Mélo</a>
                     <a href="pokedex.html" class="nav-link text-white font-medium">Pokédex</a>
+                    <a href="dresseurs.html" class="nav-link text-slate-300 hover:text-white font-medium">Dresseurs</a>
                     <a href="forum.html" class="nav-link text-slate-300 hover:text-white font-medium">Forum</a>
                     <a href="calendrier.html" class="nav-link text-slate-300 hover:text-white font-medium">Calendrier</a>
                     <a href="quiz.html" class="nav-link text-slate-300 hover:text-white font-medium">Quiz</a>
@@ -1188,17 +1189,18 @@
                 </div>
             `;
             
-            // Essayer plusieurs fois avec des timeouts progressifs
-            const maxRetries = 3;
+            // Essayer plusieurs fois avec gestion CORS améliorée
+            const maxRetries = 4;
             let lastError = null;
+            let isCorsError = false;
             
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
                     // Utilisation de l'API pokemontcg.io
                     const apiUrl = `https://api.pokemontcg.io/v2/cards?q=name:${encodeURIComponent(englishName)}*&pageSize=50`;
                     
-                    // Timeout progressif : 30s, 45s, 60s
-                    const timeout = 30000 + (attempt - 1) * 15000;
+                    // Timeout progressif : 20s, 30s, 40s, 50s
+                    const timeout = 20000 + (attempt - 1) * 10000;
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), timeout);
                     
@@ -1207,12 +1209,20 @@
                             headers: {
                                 'Accept': 'application/json'
                             },
-                            signal: controller.signal
+                            signal: controller.signal,
+                            // Mode cors pour mieux gérer les erreurs
+                            mode: 'cors',
+                            // Cache pour éviter les requêtes répétées
+                            cache: attempt === 1 ? 'default' : 'no-cache'
                         });
                         
                         clearTimeout(timeoutId);
 
                         if (!response.ok) {
+                            // Si erreur 504 (Gateway Timeout), c'est souvent un problème temporaire
+                            if (response.status === 504 && attempt < maxRetries) {
+                                throw new Error('TIMEOUT_RETRY');
+                            }
                             throw new Error(`Erreur API: ${response.status}`);
                         }
 
@@ -1253,10 +1263,41 @@
                         
                     } catch (fetchError) {
                         clearTimeout(timeoutId);
-                        if (fetchError.name === 'AbortError') {
+                        
+                        // Détecter les erreurs CORS spécifiquement
+                        if (fetchError.message && (
+                            fetchError.message.includes('CORS') || 
+                            fetchError.message.includes('Access-Control-Allow-Origin') ||
+                            (fetchError.message.includes('Failed to fetch') && !navigator.onLine === false)
+                        )) {
+                            isCorsError = true;
+                            // Pour les erreurs CORS, on attend plus longtemps entre les tentatives
+                            if (attempt < maxRetries) {
+                                container.innerHTML = `
+                                    <div class="col-span-full text-center text-slate-400 py-8">
+                                        <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                        <p>Chargement des cartes TCG... (tentative ${attempt + 1}/${maxRetries})</p>
+                                        <p class="text-xs text-slate-500 mt-2">Problème de connexion détecté, nouvelle tentative...</p>
+                                    </div>
+                                `;
+                                // Attendre plus longtemps pour CORS (5 secondes)
+                                await new Promise(resolve => setTimeout(resolve, 5000));
+                                continue;
+                            }
+                        }
+                        
+                        if (fetchError.name === 'AbortError' || fetchError.message === 'TIMEOUT_RETRY') {
                             lastError = new Error(`Timeout après ${timeout/1000}s (tentative ${attempt}/${maxRetries})`);
                             if (attempt < maxRetries) {
-                                // Continuer avec la tentative suivante
+                                container.innerHTML = `
+                                    <div class="col-span-full text-center text-slate-400 py-8">
+                                        <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                        <p>Chargement des cartes TCG... (tentative ${attempt + 1}/${maxRetries})</p>
+                                        <p class="text-xs text-slate-500 mt-2">L'API est lente, nouvelle tentative...</p>
+                                    </div>
+                                `;
+                                // Attendre avant de réessayer
+                                await new Promise(resolve => setTimeout(resolve, 3000));
                                 continue;
                             }
                         }
@@ -1270,34 +1311,30 @@
                     // Si c'est la dernière tentative, afficher l'erreur
                     if (attempt === maxRetries) {
                         let errorMessage = 'Impossible de charger les cartes TCG.';
-                        if (error.message && error.message.includes('Failed to fetch')) {
-                            errorMessage = 'Erreur de connexion. Vérifiez votre connexion internet.';
-                        } else if (error.message && error.message.includes('CORS')) {
-                            errorMessage = 'Erreur CORS : Les cartes ne peuvent pas être chargées depuis localhost.';
+                        let errorDetails = '';
+                        
+                        if (isCorsError || (error.message && error.message.includes('Failed to fetch'))) {
+                            errorMessage = 'Erreur de connexion à l\'API Pokémon TCG';
+                            errorDetails = 'L\'API bloque parfois les requêtes depuis certains domaines (erreur CORS). Cela peut être temporaire. Les cartes en cache restent disponibles.';
                         } else if (error.message && error.message.includes('Timeout')) {
                             errorMessage = error.message;
+                            errorDetails = 'L\'API a pris trop de temps à répondre. Cela peut être dû à une surcharge temporaire du serveur.';
+                        } else if (error.message && error.message.includes('504')) {
+                            errorMessage = 'L\'API ne répond pas (Gateway Timeout)';
+                            errorDetails = 'Le serveur de l\'API est temporairement indisponible. Réessayez dans quelques instants.';
                         }
                         
                         container.innerHTML = `
                             <div class="col-span-full text-center text-slate-400 py-8">
                                 <i class="fas fa-exclamation-triangle text-2xl mb-2 text-yellow-400"></i>
-                                <p class="font-semibold mb-2">${errorMessage}</p>
-                                <p class="text-xs text-slate-500 mb-4">Tentatives: ${maxRetries}. Si vous êtes en localhost, les cartes peuvent ne pas se charger à cause des restrictions CORS.</p>
+                                <p class="font-semibold mb-2 text-white">${errorMessage}</p>
+                                <p class="text-xs text-slate-500 mb-4 max-w-md mx-auto">${errorDetails}</p>
+                                <p class="text-xs text-slate-600 mb-4">Tentatives effectuées: ${maxRetries}</p>
                                 <button onclick="loadTCGCards(currentPokemonForTCG)" class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors">
                                     <i class="fas fa-redo mr-2"></i>Réessayer
                                 </button>
                             </div>
                         `;
-                    } else {
-                        // Afficher qu'on réessaie
-                        container.innerHTML = `
-                            <div class="col-span-full text-center text-slate-400 py-8">
-                                <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                                <p>Chargement des cartes TCG... (tentative ${attempt + 1}/${maxRetries})</p>
-                            </div>
-                        `;
-                        // Attendre un peu avant de réessayer
-                        await new Promise(resolve => setTimeout(resolve, 2000));
                     }
                 }
             }
