@@ -97,76 +97,123 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         /* Modal pour agrandir les cartes TCG */
-        .tcg-modal {
-            display: none;
+        .card-modal-overlay {
             position: fixed;
-            z-index: 9999;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(10px);
-            animation: fadeIn 0.3s ease;
-        }
-        .tcg-modal.active {
+            inset: 0;
+            background: rgba(5, 8, 22, 0.85);
+            backdrop-filter: blur(14px);
             display: flex;
             align-items: center;
             justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            z-index: 1000;
         }
-        .tcg-modal-content {
+
+        .card-modal-overlay.is-open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .card-modal {
             position: relative;
-            max-width: 90%;
+            background: rgba(15, 23, 42, 0.98);
+            border-radius: 24px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+            max-width: 90vw;
             max-height: 90vh;
-            animation: scaleIn 0.3s ease;
+            padding: 1.5rem 1.8rem;
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+            gap: 1.5rem;
+            transform: translateY(10px) scale(0.94);
+            opacity: 0;
+            transition: transform 0.25s ease, opacity 0.25s ease;
         }
-        .tcg-modal-content img {
-            max-width: 100%;
-            max-height: 90vh;
-            width: auto;
-            height: auto;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+
+        .card-modal-overlay.is-open .card-modal {
+            transform: translateY(0) scale(1);
+            opacity: 1;
         }
-        .tcg-modal-close {
-            position: absolute;
-            top: -40px;
-            right: 0;
-            color: white;
-            font-size: 2rem;
-            font-weight: bold;
-            cursor: pointer;
-            background: rgba(255, 255, 255, 0.1);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+
+        .card-modal-image-wrapper {
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
         }
-        .tcg-modal-close:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.1);
+
+        .card-modal-img {
+            max-width: 90vw;
+            max-height: 80vh;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            border-radius: 18px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
         }
-        .tcg-modal-info {
-            position: absolute;
-            bottom: -60px;
-            left: 50%;
-            transform: translateX(-50%);
+
+        .card-modal-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .card-modal-title {
+            margin: 0;
+            font-size: 1.4rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
             color: white;
-            text-align: center;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px 20px;
-            border-radius: 8px;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+
+        .card-modal-meta {
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
         }
-        @keyframes scaleIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+
+        .card-modal-chip {
+            padding: 0.3rem 0.8rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(226, 232, 240, 0.9);
+        }
+
+        .card-modal-close {
+            position: absolute;
+            top: 0.6rem;
+            right: 0.9rem;
+            background: transparent;
+            border: none;
+            color: rgba(226, 232, 240, 0.85);
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            transition: transform 0.2s ease, color 0.2s ease;
+            z-index: 10;
+        }
+
+        .card-modal-close:hover {
+            transform: scale(1.15);
+            color: #f97373;
+        }
+
+        @media (max-width: 768px) {
+            .card-modal {
+                grid-template-columns: minmax(0, 1fr);
+                padding: 1.2rem 1.1rem 1.4rem;
+            }
+
+            .card-modal-img {
+                max-height: 60vh;
+            }
         }
     </style>
 </head>
@@ -419,14 +466,20 @@
                             </div>
                             
                             <!-- Modal pour agrandir les cartes TCG -->
-                            <div id="tcg-modal" class="tcg-modal">
-                                <div class="tcg-modal-content">
-                                    <span class="tcg-modal-close" onclick="window.closeTCGModal()">&times;</span>
-                                    <img id="tcg-modal-image" src="" alt="Carte Pokémon">
-                                    <div class="tcg-modal-info">
-                                        <div id="tcg-modal-name" class="font-bold text-lg"></div>
-                                        <div id="tcg-modal-set" class="text-sm text-slate-300 mt-1"></div>
-                                        <div id="tcg-modal-rarity" class="text-sm text-yellow-300 mt-1"></div>
+                            <div id="card-modal-overlay" class="card-modal-overlay">
+                                <div class="card-modal" role="dialog" aria-modal="true" aria-labelledby="card-modal-name">
+                                    <button id="card-modal-close" class="card-modal-close" aria-label="Fermer la carte">×</button>
+
+                                    <div class="card-modal-image-wrapper">
+                                        <img id="card-modal-img" class="card-modal-img" src="" alt="Carte Pokémon agrandie" loading="lazy">
+                                    </div>
+
+                                    <div class="card-modal-info">
+                                        <h2 id="card-modal-name" class="card-modal-title">Nom de la carte</h2>
+                                        <p class="card-modal-meta">
+                                            <span id="card-modal-set" class="card-modal-chip">Set inconnu</span>
+                                            <span id="card-modal-rarity" class="card-modal-chip">Rareté inconnue</span>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -1390,6 +1443,15 @@
                                 // Si c'est la dernière stratégie, continuer avec la prochaine tentative
                                 break;
                             }
+                            
+                            // Si erreur CORS (souvent causée par 404), passer à la stratégie suivante
+                            if (response.status === 0 || !response.ok) {
+                                console.log(`[TCG API] Erreur de réponse avec "${searchQuery}", essai suivant...`);
+                                if (strategyIndex < searchStrategies.length - 1) {
+                                    continue;
+                                }
+                                break;
+                            }
 
                             if (!response.ok) {
                                 // Si erreur 504 (Gateway Timeout), c'est souvent un problème temporaire
@@ -1975,7 +2037,12 @@
                     const name = decodeURIComponent(this.dataset.name);
                     const set = decodeURIComponent(this.dataset.set);
                     const rarity = decodeURIComponent(this.dataset.rarity);
-                    openTCGModal(imageUrl, name, set, rarity);
+                    openCardModal({
+                        imageLarge: imageUrl,
+                        name: name,
+                        setName: set,
+                        rarity: rarity
+                    });
                 });
             });
             
@@ -1990,59 +2057,70 @@
             }
         }
 
-        // Fonctions pour la modal TCG (accessible globalement)
-        window.openTCGModal = function(imageUrl, name, set, rarity) {
-            console.log('Opening modal with:', { imageUrl, name, set, rarity });
-            const modal = document.getElementById('tcg-modal');
-            const modalImage = document.getElementById('tcg-modal-image');
-            const modalName = document.getElementById('tcg-modal-name');
-            const modalSet = document.getElementById('tcg-modal-set');
-            const modalRarity = document.getElementById('tcg-modal-rarity');
-            
-            if (!modal) {
-                console.error('Modal element not found!');
-                return;
-            }
-            if (!modalImage) {
-                console.error('Modal image element not found!');
-                return;
-            }
-            
-            modalImage.src = imageUrl || '';
-            if (modalName) modalName.textContent = name || '';
-            if (modalSet) modalSet.textContent = set || '';
-            if (modalRarity) modalRarity.textContent = rarity || '';
-            
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Empêcher le scroll
-        };
-        
-        window.closeTCGModal = function() {
-            const modal = document.getElementById('tcg-modal');
-            if (modal) {
-                modal.classList.remove('active');
-                document.body.style.overflow = ''; // Réactiver le scroll
-            }
-        };
+        // Sélecteurs de la modal (une seule fois)
+        let cardModalOverlay, cardModalImg, cardModalName, cardModalSet, cardModalRarity, cardModalClose;
 
-        // Fermer la modal en cliquant en dehors de l'image
+        // Initialiser les sélecteurs après le chargement du DOM
         document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('tcg-modal');
-            if (modal) {
-                modal.addEventListener('click', function(e) {
-                    if (e.target === modal) {
-                        window.closeTCGModal();
-                    }
-                });
-                
-                // Fermer avec la touche Escape
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape' && modal.classList.contains('active')) {
-                        window.closeTCGModal();
-                    }
-                });
+            cardModalOverlay = document.getElementById('card-modal-overlay');
+            cardModalImg = document.getElementById('card-modal-img');
+            cardModalName = document.getElementById('card-modal-name');
+            cardModalSet = document.getElementById('card-modal-set');
+            cardModalRarity = document.getElementById('card-modal-rarity');
+            cardModalClose = document.getElementById('card-modal-close');
+
+            if (!cardModalOverlay || !cardModalImg) {
+                console.error('Modal elements not found!');
+                return;
             }
+
+            // Bouton ×
+            if (cardModalClose) {
+                cardModalClose.addEventListener('click', closeCardModal);
+            }
+
+            // Clic en dehors de la boîte (sur l'overlay)
+            cardModalOverlay.addEventListener('click', (event) => {
+                if (event.target === cardModalOverlay) {
+                    closeCardModal();
+                }
+            });
+
+            // Touche Échap
+            window.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' || event.key === 'Esc') {
+                    if (cardModalOverlay && cardModalOverlay.classList.contains('is-open')) {
+                        closeCardModal();
+                    }
+                }
+            });
         });
+
+        // Ouvrir la modal avec les infos d'une carte
+        function openCardModal({ imageLarge, name, setName, rarity }) {
+            if (!cardModalOverlay || !cardModalImg) {
+                console.error('Modal not initialized!');
+                return;
+            }
+
+            cardModalImg.src = imageLarge || '';
+            cardModalImg.alt = name || 'Carte Pokémon';
+            if (cardModalName) cardModalName.textContent = name || 'Carte inconnue';
+            if (cardModalSet) cardModalSet.textContent = setName ? `Set : ${setName}` : 'Set inconnu';
+            if (cardModalRarity) cardModalRarity.textContent = rarity ? `Rareté : ${rarity}` : '';
+
+            cardModalOverlay.classList.add('is-open');
+            document.body.style.overflow = 'hidden'; // bloque le scroll en fond
+        }
+
+        // Fermer la modal
+        function closeCardModal() {
+            if (cardModalOverlay) {
+                cardModalOverlay.classList.remove('is-open');
+                document.body.style.overflow = '';
+            }
+        }
+
 
         async function updateEvolutionChain(pokemon) {
             const container = document.getElementById('evolution-chain-container');
