@@ -67,6 +67,96 @@
             background: rgba(255, 255, 255, 0.03);
             border-left: 3px solid #3b82f6;
         }
+        .trainer-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fbbf24;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        .trainer-avatar-large {
+            width: 112px;
+            height: 112px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #fcd34d;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        .badge-role {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1e293b;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .badge-specialty {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .favorite-btn {
+            background: transparent;
+            border: none;
+            color: #fbbf24;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+        .favorite-btn:hover {
+            transform: scale(1.2);
+        }
+        .favorite-btn.active {
+            color: #fbbf24;
+        }
+        .favorite-btn:not(.active) {
+            color: #64748b;
+        }
+        .social-links {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+            justify-content: center;
+        }
+        .social-link {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .social-link:hover {
+            background: rgba(251, 191, 36, 0.3);
+            transform: translateY(-2px);
+        }
+        .profile-transition {
+            animation: fadeInSlide 0.4s ease-out;
+        }
+        @keyframes fadeInSlide {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
         /* Modal pour agrandir les cartes TCG */
         .card-modal-overlay {
             position: fixed;
@@ -327,9 +417,15 @@
                 {
                     name: "Professeur Chen",
                     nameEN: "Professor Oak",
+                    avatar: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
                     role: "Chercheur Pokémon",
                     location: "Bourg Palette",
                     specialty: "Recherche Pokémon",
+                    socialLinks: {
+                        website: "#",
+                        twitter: "#",
+                        instagram: "#"
+                    },
                     history: "Le Professeur Chen est le chercheur Pokémon le plus respecté de la région de Kanto. Il a consacré sa vie à l'étude des Pokémon et offre aux jeunes dresseurs leur premier Pokémon. Il est également le grand-père de Régis, le rival du protagoniste.",
                     lore: "Le Professeur Chen est connu pour son Pokédex, un appareil révolutionnaire qui enregistre les données de tous les Pokémon rencontrés. Il a été le mentor de nombreux dresseurs légendaires et continue d'aider les nouvelles générations à comprendre le monde des Pokémon.",
                     anecdotes: [
@@ -343,9 +439,15 @@
                 {
                     name: "Pierre",
                     nameEN: "Brock",
+                    avatar: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/74.png",
                     role: "Champion d'Arène",
                     location: "Argenta",
                     specialty: "Pokémon de type Roche",
+                    socialLinks: {
+                        website: "#",
+                        twitter: "#",
+                        instagram: "#"
+                    },
                     history: "Pierre est le Champion d'Arène d'Argenta, spécialisé dans les Pokémon de type Roche. Il est également un excellent cuisinier et prend soin de ses nombreux frères et sœurs. Il rêve de devenir le meilleur éleveur de Pokémon au monde.",
                     lore: "Pierre est connu pour sa passion pour les roches et les fossiles. Il a une connaissance approfondie des Pokémon de type Roche et peut identifier n'importe quelle pierre précieuse. Malgré sa jeunesse, il est très responsable et mature.",
                     anecdotes: [
@@ -359,9 +461,15 @@
                 {
                     name: "Ondine",
                     nameEN: "Misty",
+                    avatar: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png",
                     role: "Championne d'Arène",
                     location: "Azuria",
                     specialty: "Pokémon de type Eau",
+                    socialLinks: {
+                        website: "#",
+                        twitter: "#",
+                        instagram: "#"
+                    },
                     history: "Ondine est la Championne d'Arène d'Azuria, spécialisée dans les Pokémon de type Eau. Elle est énergique, déterminée et a un fort caractère. Elle a une passion pour les Pokémon aquatiques et rêve de devenir Maître Pokémon.",
                     lore: "Ondine est la plus jeune des quatre sœurs qui dirigent l'Arène d'Azuria. Elle est souvent frustrée par ses sœurs qui préfèrent la beauté à la force. Elle a un lien spécial avec ses Pokémon de type Eau, notamment son Lézardou.",
                     anecdotes: [
@@ -375,9 +483,15 @@
                 {
                     name: "Régis",
                     nameEN: "Gary Oak",
+                    avatar: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png",
                     role: "Rival",
                     location: "Bourg Palette",
                     specialty: "Divers",
+                    socialLinks: {
+                        website: "#",
+                        twitter: "#",
+                        instagram: "#"
+                    },
                     history: "Régis est le petit-fils du Professeur Chen et le rival principal du protagoniste. Au début, il est arrogant et méprisant, mais il évolue au fil de l'aventure pour devenir un dresseur respectueux et puissant.",
                     lore: "Régis commence son aventure avec un Pokémon de type différent de celui du protagoniste. Il collectionne rapidement 10 badges et devient un chercheur Pokémon, suivant les traces de son grand-père. Il finit par comprendre que la force ne vient pas seulement de la puissance, mais aussi du lien avec ses Pokémon.",
                     anecdotes: [
@@ -393,9 +507,15 @@
                 {
                     name: "Jasmine",
                     nameEN: "Jasmine",
+                    avatar: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/81.png",
                     role: "Championne d'Arène",
                     location: "Oliville",
                     specialty: "Pokémon de type Acier",
+                    socialLinks: {
+                        website: "#",
+                        twitter: "#",
+                        instagram: "#"
+                    },
                     history: "Jasmine est la Championne d'Arène d'Oliville, spécialisée dans les Pokémon de type Acier. Elle est douce, timide mais très déterminée. Elle a un lien spécial avec les Pokémon de type Acier, notamment son Magnéti.",
                     lore: "Jasmine est connue pour sa gentillesse et sa patience. Elle prend soin des Pokémon malades et blessés. Elle a découvert sa passion pour les Pokémon de type Acier en soignant un Magnéti malade. Elle est également une excellente amie avec le Professeur Orme.",
                     anecdotes: [
@@ -409,9 +529,15 @@
                 {
                     name: "Silver",
                     nameEN: "Silver",
+                    avatar: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/197.png",
                     role: "Rival",
                     location: "Johto",
                     specialty: "Divers",
+                    socialLinks: {
+                        website: "#",
+                        twitter: "#",
+                        instagram: "#"
+                    },
                     history: "Silver est le rival du protagoniste dans les jeux de la génération 2. Il est initialement arrogant et cruel envers les Pokémon, mais il évolue au fil de l'aventure pour comprendre l'importance du lien entre dresseur et Pokémon.",
                     lore: "Silver est en fait le fils de Giovanni, le leader de la Team Rocket. Il a été abandonné par son père et a développé une haine envers les dresseurs qui maltraitent leurs Pokémon. Il finit par comprendre que la vraie force vient du respect mutuel.",
                     anecdotes: [
@@ -427,9 +553,15 @@
                 {
                     name: "Pierre Rochard",
                     nameEN: "Steven Stone",
+                    avatar: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/306.png",
                     role: "Maître de la Ligue",
                     location: "Pacifidlog",
                     specialty: "Pokémon de type Acier et Roche",
+                    socialLinks: {
+                        website: "#",
+                        twitter: "#",
+                        instagram: "#"
+                    },
                     history: "Pierre Rochard est le Maître de la Ligue Pokémon de Hoenn et le fils du président de la Devon Corporation. Il est passionné par les pierres rares et les Pokémon de type Acier. Il est calme, réfléchi et très puissant.",
                     lore: "Pierre Rochard est un collectionneur de pierres rares et un expert en minéralogie. Il voyage à travers Hoenn pour trouver des pierres précieuses et des fossiles. Il a un lien spécial avec son Métalosse, qu'il a trouvé dans une grotte. Il aide le protagoniste à plusieurs reprises dans sa quête.",
                     anecdotes: [
@@ -443,9 +575,15 @@
                 {
                     name: "Flora",
                     nameEN: "May",
+                    avatar: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/252.png",
                     role: "Rivale/Compagne",
                     location: "Bourg-en-Vol",
                     specialty: "Divers",
+                    socialLinks: {
+                        website: "#",
+                        twitter: "#",
+                        instagram: "#"
+                    },
                     history: "Flora est la fille du Professeur Seko et la rivale/compagne du protagoniste dans les jeux de Hoenn. Elle est énergique, optimiste et aime voyager. Elle devient une Coordinatrice Pokémon dans l'anime.",
                     lore: "Flora commence son aventure en recevant un Pokémon du Professeur Seko. Elle voyage à travers Hoenn pour devenir une dresseuse accomplie. Dans l'anime, elle se spécialise dans les Concours Pokémon et devient une Coordinatrice talentueuse.",
                     anecdotes: [
@@ -461,9 +599,15 @@
                 {
                     name: "Cynthia",
                     nameEN: "Cynthia",
+                    avatar: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/445.png",
                     role: "Maîtresse de la Ligue",
                     location: "Joliberges",
                     specialty: "Équipe équilibrée",
+                    socialLinks: {
+                        website: "#",
+                        twitter: "#",
+                        instagram: "#"
+                    },
                     history: "Cynthia est la Maîtresse de la Ligue Pokémon de Sinnoh, considérée comme l'une des champions les plus puissants de l'histoire. Elle est calme, intelligente et a une connaissance approfondie de la mythologie Pokémon. Elle possède une équipe redoutable et équilibrée.",
                     lore: "Cynthia est une chercheuse passionnée par l'histoire et la mythologie de Sinnoh. Elle étudie les légendes des Pokémon légendaires, notamment Dialga, Palkia et Giratina. Elle aide le protagoniste à comprendre les mystères de la région et à empêcher l'équipe Galaxie de détruire le monde.",
                     anecdotes: [
@@ -477,9 +621,15 @@
                 {
                     name: "Aurore",
                     nameEN: "Dawn",
+                    avatar: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/133.png",
                     role: "Compagne",
                     location: "Bourg-en-Vol",
                     specialty: "Divers",
+                    socialLinks: {
+                        website: "#",
+                        twitter: "#",
+                        instagram: "#"
+                    },
                     history: "Aurore est la compagne du protagoniste dans les jeux de Sinnoh. Elle est énergique, optimiste et rêve de devenir une Coordinatrice Pokémon. Elle voyage à travers Sinnoh pour participer aux Concours Pokémon.",
                     lore: "Aurore commence son aventure en recevant un Pokémon du Professeur Sorbier. Elle se spécialise dans les Concours Pokémon et devient une Coordinatrice talentueuse. Elle a un lien spécial avec son Évoli, qu'elle utilise dans les concours.",
                     anecdotes: [
@@ -495,9 +645,15 @@
                 {
                     name: "Ghetis",
                     nameEN: "Ghetsis",
+                    avatar: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/635.png",
                     role: "Leader de la Team Plasma",
                     location: "Unys",
                     specialty: "Manipulation",
+                    socialLinks: {
+                        website: "#",
+                        twitter: "#",
+                        instagram: "#"
+                    },
                     history: "Ghetis est le leader de la Team Plasma, une organisation qui prétend vouloir libérer les Pokémon de leurs dresseurs. En réalité, il manipule N et la Team Plasma pour ses propres objectifs égoïstes. Il est l'un des antagonistes les plus dangereux de la série.",
                     lore: "Ghetis est un manipulateur expert qui utilise la Team Plasma pour voler les Pokémon des dresseurs. Il prétend vouloir libérer les Pokémon, mais en réalité, il veut contrôler tous les Pokémon pour dominer le monde. Il a élevé N depuis l'enfance pour en faire un outil de ses plans.",
                     anecdotes: [
@@ -511,9 +667,15 @@
                 {
                     name: "N",
                     nameEN: "N",
+                    avatar: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/644.png",
                     role: "Rival/Protagoniste",
                     location: "Unys",
                     specialty: "Divers",
+                    socialLinks: {
+                        website: "#",
+                        twitter: "#",
+                        instagram: "#"
+                    },
                     history: "N est un personnage complexe qui croit que les Pokémon doivent être libérés de leurs dresseurs. Il est le 'roi' de la Team Plasma, mais il ignore que Ghetis le manipule. Il finit par comprendre la vérité et change d'avis sur le lien entre dresseurs et Pokémon.",
                     lore: "N a été élevé par Ghetis depuis l'enfance et a développé la capacité de communiquer avec les Pokémon. Il croit sincèrement que les Pokémon sont maltraités par les dresseurs, mais il finit par comprendre que le lien entre dresseur et Pokémon peut être bénéfique pour les deux.",
                     anecdotes: [
@@ -529,9 +691,15 @@
                 {
                     name: "Lysandre",
                     nameEN: "Lysandre",
+                    avatar: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/717.png",
                     role: "Leader de la Team Flare",
                     location: "Kalos",
                     specialty: "Divers",
+                    socialLinks: {
+                        website: "#",
+                        twitter: "#",
+                        instagram: "#"
+                    },
                     history: "Lysandre est le leader de la Team Flare, une organisation qui veut créer un 'monde parfait' en éliminant ceux qu'ils considèrent comme indésirables. Il est charismatique, riche et possède une technologie avancée. Il est obsédé par la beauté et la perfection.",
                     lore: "Lysandre est le fondateur de la Team Flare et le propriétaire de la société Lysandre Labs. Il a développé une technologie qui peut contrôler les Pokémon légendaires. Il veut utiliser cette technologie pour créer un monde parfait, mais ses méthodes sont extrêmes et dangereuses.",
                     anecdotes: [
@@ -545,9 +713,15 @@
                 {
                     name: "Sannah",
                     nameEN: "Serena",
+                    avatar: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/653.png",
                     role: "Rivale/Compagne",
                     location: "Bourg-en-Vol",
                     specialty: "Divers",
+                    socialLinks: {
+                        website: "#",
+                        twitter: "#",
+                        instagram: "#"
+                    },
                     history: "Sannah est la rivale/compagne du protagoniste dans les jeux de Kalos. Elle est énergique, joyeuse et rêve de devenir une dresseuse accomplie. Elle voyage à travers Kalos pour améliorer ses compétences.",
                     lore: "Sannah commence son aventure en recevant un Pokémon du Professeur Platane. Elle voyage à travers Kalos pour devenir une dresseuse accomplie. Dans l'anime, elle devient une Performeuse Pokémon et participe aux Spectacles Pokémon.",
                     anecdotes: [
@@ -563,9 +737,15 @@
                 {
                     name: "Lilith",
                     nameEN: "Lusamine",
+                    avatar: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/800.png",
                     role: "Présidente de la Fondation Æther",
                     location: "Alola",
                     specialty: "Divers",
+                    socialLinks: {
+                        website: "#",
+                        twitter: "#",
+                        instagram: "#"
+                    },
                     history: "Lilith est la présidente de la Fondation Æther, une organisation qui protège les Pokémon. Cependant, elle est obsédée par les Ultra-Chimères et veut les préserver dans des cristaux. Elle finit par fusionner avec une Ultra-Chimère et devient dangereuse.",
                     lore: "Lilith est une mère qui a perdu son mari dans une dimension alternative. Elle est devenue obsédée par les Ultra-Chimères et veut les préserver pour l'éternité. Elle finit par fusionner avec une Ultra-Chimère et doit être sauvée par le protagoniste.",
                     anecdotes: [
@@ -579,9 +759,15 @@
                 {
                     name: "Gladio",
                     nameEN: "Gladion",
+                    avatar: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/773.png",
                     role: "Rival",
                     location: "Alola",
                     specialty: "Divers",
+                    socialLinks: {
+                        website: "#",
+                        twitter: "#",
+                        instagram: "#"
+                    },
                     history: "Gladio est le fils de Lilith et le frère de Lilie. Il a quitté la Fondation Æther pour protéger son Type:Null. Il est solitaire, déterminé et possède un fort sens de la justice. Il aide le protagoniste à arrêter sa mère.",
                     lore: "Gladio a quitté la Fondation Æther car il ne supportait pas les expériences de sa mère sur les Pokémon. Il a volé un Type:Null pour le protéger et voyage à travers Alola pour devenir plus fort. Il finit par aider le protagoniste à sauver sa mère.",
                     anecdotes: [
@@ -597,9 +783,15 @@
                 {
                     name: "Rose",
                     nameEN: "Chairman Rose",
+                    avatar: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/890.png",
                     role: "Président de la Ligue",
                     location: "Galar",
                     specialty: "Divers",
+                    socialLinks: {
+                        website: "#",
+                        twitter: "#",
+                        instagram: "#"
+                    },
                     history: "Rose est le président de la Ligue Pokémon de Galar et le propriétaire de Macro Cosmos. Il semble bienveillant au début, mais cache des intentions dangereuses. Il veut réveiller Éthernatos pour résoudre une crise énergétique future, même si cela met le monde en danger.",
                     lore: "Rose est un homme d'affaires puissant qui a construit l'infrastructure de Galar. Il est obsédé par l'idée de résoudre une crise énergétique future et veut réveiller Éthernatos, même si cela met le monde en danger. Il finit par être arrêté par le protagoniste.",
                     anecdotes: [
@@ -613,9 +805,15 @@
                 {
                     name: "Nabil",
                     nameEN: "Hop",
+                    avatar: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/810.png",
                     role: "Rival",
                     location: "Bourg-en-Vol",
                     specialty: "Divers",
+                    socialLinks: {
+                        website: "#",
+                        twitter: "#",
+                        instagram: "#"
+                    },
                     history: "Nabil est le frère cadet de Léon, le Champion de Galar, et le rival du protagoniste. Il est énergique, optimiste et rêve de devenir Champion comme son frère. Il commence avec un starter et voyage à travers Galar pour améliorer ses compétences.",
                     lore: "Nabil vit dans l'ombre de son frère Léon, le Champion invaincu de Galar. Il veut prouver qu'il peut être aussi fort que son frère et devenir Champion. Il finit par comprendre que sa vraie passion est la recherche Pokémon et devient l'assistant du Professeur Sorbier.",
                     anecdotes: [
@@ -631,6 +829,40 @@
 
         let currentGeneration = 1;
         let trainerCardsCache = new Map();
+        
+        // Fonction pour obtenir les favoris depuis localStorage
+        function getFavorites() {
+            const favorites = localStorage.getItem('trainerFavorites');
+            return favorites ? JSON.parse(favorites) : [];
+        }
+        
+        // Fonction pour sauvegarder les favoris dans localStorage
+        function saveFavorites(favorites) {
+            localStorage.setItem('trainerFavorites', JSON.stringify(favorites));
+        }
+        
+        // Fonction pour toggle favori
+        function toggleFavorite(nameEN, event) {
+            if (event) {
+                event.stopPropagation(); // Empêcher le clic sur la carte
+            }
+            const favorites = getFavorites();
+            const index = favorites.indexOf(nameEN);
+            if (index > -1) {
+                favorites.splice(index, 1);
+            } else {
+                favorites.push(nameEN);
+            }
+            saveFavorites(favorites);
+            // Recharger la liste pour mettre à jour les icônes
+            const searchValue = document.getElementById('trainer-search')?.value || '';
+            loadTrainers(currentGeneration, searchValue);
+        }
+        
+        // Fonction pour vérifier si un dresseur est en favori
+        function isFavorite(nameEN) {
+            return getFavorites().includes(nameEN);
+        }
 
         function showGeneration(gen) {
             currentGeneration = gen;
@@ -675,7 +907,10 @@
                 return;
             }
             
-            content.innerHTML = filtered.map((trainer, index) => `
+            content.innerHTML = filtered.map((trainer, index) => {
+                const avatarUrl = trainer.avatar || 'https://via.placeholder.com/80/1e293b/fbbf24?text=PP';
+                const isFav = isFavorite(trainer.nameEN);
+                return `
                 <div class="trainer-card rounded-2xl p-8 mb-8 scroll-reveal cursor-pointer hover:scale-[1.02] transition-transform" 
                      style="animation-delay: ${index * 0.1}s"
                      onclick="showTrainerProfile('${trainer.nameEN.replace(/'/g, "\\'")}')">
@@ -683,13 +918,43 @@
                         <!-- Trainer Info -->
                         <div class="flex-1">
                             <div class="flex items-center gap-4 mb-6">
-                                <div class="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-user text-white text-3xl"></i>
+                                <div class="relative">
+                                    <img src="${avatarUrl}" 
+                                         alt="Portrait de ${trainer.name}" 
+                                         class="trainer-avatar"
+                                         onerror="this.src='https://via.placeholder.com/80/1e293b/fbbf24?text=PP';">
+                                    <button onclick="toggleFavorite('${trainer.nameEN.replace(/'/g, "\\'")}', event)" 
+                                            class="favorite-btn ${isFav ? 'active' : ''} absolute -top-1 -right-1"
+                                            title="${isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}">
+                                        <i class="fas ${isFav ? 'fa-star' : 'fa-star'}"></i>
+                                    </button>
                                 </div>
-                                <div>
-                                    <h2 class="text-3xl font-bold text-white mb-2">${trainer.name}</h2>
-                                    <p class="text-slate-400">${trainer.role} • ${trainer.location}</p>
-                                    <p class="text-slate-500 text-sm mt-1">Spécialité: ${trainer.specialty}</p>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-2 flex-wrap">
+                                        <h2 class="text-3xl font-bold text-white">${trainer.name}</h2>
+                                        <span class="badge-role">${trainer.role}</span>
+                                        <span class="badge-specialty">${trainer.specialty}</span>
+                                    </div>
+                                    <p class="text-slate-400 mb-2">${trainer.location}</p>
+                                    ${trainer.socialLinks ? `
+                                    <div class="social-links">
+                                        ${trainer.socialLinks.website && trainer.socialLinks.website !== '#' ? `
+                                            <a href="${trainer.socialLinks.website}" target="_blank" class="social-link" title="Site web">
+                                                <i class="fas fa-globe"></i>
+                                            </a>
+                                        ` : ''}
+                                        ${trainer.socialLinks.twitter && trainer.socialLinks.twitter !== '#' ? `
+                                            <a href="${trainer.socialLinks.twitter}" target="_blank" class="social-link" title="Twitter">
+                                                <i class="fab fa-twitter"></i>
+                                            </a>
+                                        ` : ''}
+                                        ${trainer.socialLinks.instagram && trainer.socialLinks.instagram !== '#' ? `
+                                            <a href="${trainer.socialLinks.instagram}" target="_blank" class="social-link" title="Instagram">
+                                                <i class="fab fa-instagram"></i>
+                                            </a>
+                                        ` : ''}
+                                    </div>
+                                    ` : ''}
                                 </div>
                             </div>
                             
@@ -742,7 +1007,8 @@
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
             
             // Load TCG cards for each trainer
             filtered.forEach((trainer, index) => {
@@ -777,17 +1043,56 @@
 
             const content = document.getElementById('trainers-content');
             const searchValue = document.getElementById('trainer-search')?.value || '';
+            const avatarUrl = tr.avatar || 'https://via.placeholder.com/112/1e293b/fbbf24?text=PP';
+            const isFav = isFavorite(tr.nameEN);
             
-            // Génère le HTML du détail
+            // Génère le HTML du détail avec animation
             content.innerHTML = `
-                <div class="max-w-4xl mx-auto bg-slate-800 rounded-2xl shadow-xl p-8 mt-8 mb-8">
+                <div class="max-w-4xl mx-auto bg-slate-800 rounded-2xl shadow-xl p-8 mt-8 mb-8 profile-transition">
                     <button onclick="loadTrainers(currentGeneration, document.getElementById('trainer-search').value)" 
                             class="text-sm mb-6 text-yellow-400 hover:text-yellow-300 hover:underline flex items-center gap-2">
                         <i class="fas fa-arrow-left"></i> Retour à la liste
                     </button>
-                    <h2 class="text-4xl font-extrabold text-yellow-300 mb-2">${tr.name}</h2>
-                    <p class="text-lg text-slate-300 mb-2">${tr.role} — ${tr.location}</p>
-                    <p class="text-slate-400 mb-3 font-semibold">Spécialité : ${tr.specialty}</p>
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="relative">
+                            <img src="${avatarUrl}" 
+                                 alt="Portrait ${tr.name}" 
+                                 class="trainer-avatar-large"
+                                 onerror="this.src='https://via.placeholder.com/112/1e293b/fbbf24?text=PP';">
+                            <button onclick="toggleFavorite('${tr.nameEN.replace(/'/g, "\\'")}', event)" 
+                                    class="favorite-btn ${isFav ? 'active' : ''} absolute -top-2 -right-2 text-2xl"
+                                    title="${isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}">
+                                <i class="fas ${isFav ? 'fa-star' : 'fa-star'}"></i>
+                            </button>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <h2 class="text-4xl font-extrabold text-yellow-300">${tr.name}</h2>
+                                <span class="badge-role">${tr.role}</span>
+                                <span class="badge-specialty">${tr.specialty}</span>
+                            </div>
+                            <p class="text-lg text-slate-300 mb-2">${tr.location}</p>
+                            ${tr.socialLinks ? `
+                            <div class="social-links justify-start">
+                                ${tr.socialLinks.website && tr.socialLinks.website !== '#' ? `
+                                    <a href="${tr.socialLinks.website}" target="_blank" class="social-link" title="Site web">
+                                        <i class="fas fa-globe"></i>
+                                    </a>
+                                ` : ''}
+                                ${tr.socialLinks.twitter && tr.socialLinks.twitter !== '#' ? `
+                                    <a href="${tr.socialLinks.twitter}" target="_blank" class="social-link" title="Twitter">
+                                        <i class="fab fa-twitter"></i>
+                                    </a>
+                                ` : ''}
+                                ${tr.socialLinks.instagram && tr.socialLinks.instagram !== '#' ? `
+                                    <a href="${tr.socialLinks.instagram}" target="_blank" class="social-link" title="Instagram">
+                                        <i class="fab fa-instagram"></i>
+                                    </a>
+                                ` : ''}
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
                     <hr class="mb-6 border-slate-600">
                     <div class="mb-5">
                         <strong class="text-yellow-400">Histoire :</strong> 
