@@ -68,76 +68,123 @@
             border-left: 3px solid #3b82f6;
         }
         /* Modal pour agrandir les cartes TCG */
-        .tcg-modal {
-            display: none;
+        .card-modal-overlay {
             position: fixed;
-            z-index: 9999;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(10px);
-            animation: fadeIn 0.3s ease;
-        }
-        .tcg-modal.active {
+            inset: 0;
+            background: rgba(5, 8, 22, 0.85);
+            backdrop-filter: blur(14px);
             display: flex;
             align-items: center;
             justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            z-index: 1000;
         }
-        .tcg-modal-content {
+
+        .card-modal-overlay.is-open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .card-modal {
             position: relative;
-            max-width: 90%;
+            background: rgba(15, 23, 42, 0.98);
+            border-radius: 24px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+            max-width: 90vw;
             max-height: 90vh;
-            animation: scaleIn 0.3s ease;
+            padding: 1.5rem 1.8rem;
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+            gap: 1.5rem;
+            transform: translateY(10px) scale(0.94);
+            opacity: 0;
+            transition: transform 0.25s ease, opacity 0.25s ease;
         }
-        .tcg-modal-content img {
-            max-width: 100%;
-            max-height: 90vh;
-            width: auto;
-            height: auto;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+
+        .card-modal-overlay.is-open .card-modal {
+            transform: translateY(0) scale(1);
+            opacity: 1;
         }
-        .tcg-modal-close {
-            position: absolute;
-            top: -40px;
-            right: 0;
-            color: white;
-            font-size: 2rem;
-            font-weight: bold;
-            cursor: pointer;
-            background: rgba(255, 255, 255, 0.1);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+
+        .card-modal-image-wrapper {
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
         }
-        .tcg-modal-close:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.1);
+
+        .card-modal-img {
+            max-width: 90vw;
+            max-height: 80vh;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            border-radius: 18px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
         }
-        .tcg-modal-info {
-            position: absolute;
-            bottom: -60px;
-            left: 50%;
-            transform: translateX(-50%);
+
+        .card-modal-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .card-modal-title {
+            margin: 0;
+            font-size: 1.4rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
             color: white;
-            text-align: center;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px 20px;
-            border-radius: 8px;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+
+        .card-modal-meta {
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
         }
-        @keyframes scaleIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+
+        .card-modal-chip {
+            padding: 0.3rem 0.8rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(226, 232, 240, 0.9);
+        }
+
+        .card-modal-close {
+            position: absolute;
+            top: 0.6rem;
+            right: 0.9rem;
+            background: transparent;
+            border: none;
+            color: rgba(226, 232, 240, 0.85);
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            transition: transform 0.2s ease, color 0.2s ease;
+            z-index: 10;
+        }
+
+        .card-modal-close:hover {
+            transform: scale(1.15);
+            color: #f97373;
+        }
+
+        @media (max-width: 768px) {
+            .card-modal {
+                grid-template-columns: minmax(0, 1fr);
+                padding: 1.2rem 1.1rem 1.4rem;
+            }
+
+            .card-modal-img {
+                max-height: 60vh;
+            }
         }
     </style>
 </head>
@@ -222,6 +269,16 @@
     <!-- Trainers Content -->
     <section class="py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Barre de recherche -->
+            <div class="my-6 text-center">
+                <input
+                    id="trainer-search"
+                    class="px-5 py-3 rounded-full border border-slate-400 focus:border-yellow-500 outline-none w-full max-w-md shadow-md text-lg bg-slate-800 text-white placeholder-slate-400"
+                    type="search"
+                    placeholder="Rechercher un dresseur, ville ou rôle..."
+                    autocomplete="off"
+                />
+            </div>
             <div id="trainers-content">
                 <!-- Content will be dynamically loaded -->
             </div>
@@ -229,13 +286,20 @@
     </section>
 
     <!-- Modal pour agrandir les cartes TCG -->
-    <div id="tcg-modal" class="tcg-modal">
-        <div class="tcg-modal-content">
-            <span class="tcg-modal-close" onclick="closeTCGModal()">&times;</span>
-            <img id="tcg-modal-image" src="" alt="Carte Pokémon">
-            <div class="tcg-modal-info">
-                <div id="tcg-modal-name" class="font-bold text-lg"></div>
-                <div id="tcg-modal-set" class="text-sm text-slate-300 mt-1"></div>
+    <div id="card-modal-overlay" class="card-modal-overlay">
+        <div class="card-modal" role="dialog" aria-modal="true" aria-labelledby="card-modal-name">
+            <button id="card-modal-close" class="card-modal-close" aria-label="Fermer la carte">×</button>
+
+            <div class="card-modal-image-wrapper">
+                <img id="card-modal-img" class="card-modal-img" src="" alt="Carte Pokémon agrandie" loading="lazy">
+            </div>
+
+            <div class="card-modal-info">
+                <h2 id="card-modal-name" class="card-modal-title">Nom de la carte</h2>
+                <p class="card-modal-meta">
+                    <span id="card-modal-set" class="card-modal-chip">Set inconnu</span>
+                    <span id="card-modal-rarity" class="card-modal-chip">Rareté inconnue</span>
+                </p>
             </div>
         </div>
     </div>
@@ -579,26 +643,42 @@
                 }
             });
             
-            // Load trainers for this generation
-            loadTrainers(gen);
+            // Reset search and load trainers
+            const searchInput = document.getElementById('trainer-search');
+            if (searchInput) {
+                searchInput.value = '';
+            }
+            loadTrainers(gen, '');
         }
 
-        function loadTrainers(gen) {
+        function loadTrainers(gen, filter = '') {
             const content = document.getElementById('trainers-content');
             const trainers = trainersDatabase[gen] || [];
             
-            if (trainers.length === 0) {
+            // Filtrage sur nom, nomEN, rôle ou ville
+            const filtered = !filter
+                ? trainers
+                : trainers.filter(tr =>
+                    tr.name.toLowerCase().includes(filter) ||
+                    (tr.nameEN && tr.nameEN.toLowerCase().includes(filter)) ||
+                    (tr.role && tr.role.toLowerCase().includes(filter)) ||
+                    (tr.location && tr.location.toLowerCase().includes(filter))
+                );
+            
+            if (filtered.length === 0) {
                 content.innerHTML = `
                     <div class="text-center text-slate-400 py-12">
-                        <i class="fas fa-users text-4xl mb-4 opacity-50"></i>
-                        <p class="text-lg">Aucun dresseur disponible pour cette génération.</p>
+                        <i class="fas fa-user-slash text-4xl mb-4 opacity-50"></i>
+                        <p class="text-lg">Aucun dresseur trouvé pour la recherche.</p>
                     </div>
                 `;
                 return;
             }
             
-            content.innerHTML = trainers.map((trainer, index) => `
-                <div class="trainer-card rounded-2xl p-8 mb-8 scroll-reveal" style="animation-delay: ${index * 0.1}s">
+            content.innerHTML = filtered.map((trainer, index) => `
+                <div class="trainer-card rounded-2xl p-8 mb-8 scroll-reveal cursor-pointer hover:scale-[1.02] transition-transform" 
+                     style="animation-delay: ${index * 0.1}s"
+                     onclick="showTrainerProfile('${trainer.nameEN.replace(/'/g, "\\'")}')">
                     <div class="flex flex-col md:flex-row gap-8">
                         <!-- Trainer Info -->
                         <div class="flex-1">
@@ -665,16 +745,19 @@
             `).join('');
             
             // Load TCG cards for each trainer
-            trainers.forEach((trainer, index) => {
+            filtered.forEach((trainer, index) => {
                 if (trainer.tcgCards && trainer.tcgCards.length > 0) {
                     loadTrainerTCGCards(trainer, gen, index);
                 } else {
-                    document.getElementById(`tcg-cards-${gen}-${index}`).innerHTML = `
-                        <div class="text-center text-slate-500 py-4">
-                            <i class="fas fa-info-circle text-xl mb-2"></i>
-                            <p class="text-sm">Aucune carte TCG disponible pour ce dresseur.</p>
-                        </div>
-                    `;
+                    const cardContainer = document.getElementById(`tcg-cards-${gen}-${index}`);
+                    if (cardContainer) {
+                        cardContainer.innerHTML = `
+                            <div class="text-center text-slate-500 py-4">
+                                <i class="fas fa-info-circle text-xl mb-2"></i>
+                                <p class="text-sm">Aucune carte TCG disponible pour ce dresseur.</p>
+                            </div>
+                        `;
+                    }
                 }
             });
             
@@ -684,6 +767,68 @@
                     el.classList.add('revealed');
                 });
             }, 100);
+        }
+
+        function showTrainerProfile(nameEN) {
+            // Trouve le dresseur dans la DB (nom anglais unique)
+            const all = Object.values(trainersDatabase).flat();
+            const tr = all.find(t => t.nameEN === nameEN);
+            if (!tr) return;
+
+            const content = document.getElementById('trainers-content');
+            const searchValue = document.getElementById('trainer-search')?.value || '';
+            
+            // Génère le HTML du détail
+            content.innerHTML = `
+                <div class="max-w-4xl mx-auto bg-slate-800 rounded-2xl shadow-xl p-8 mt-8 mb-8">
+                    <button onclick="loadTrainers(currentGeneration, document.getElementById('trainer-search').value)" 
+                            class="text-sm mb-6 text-yellow-400 hover:text-yellow-300 hover:underline flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i> Retour à la liste
+                    </button>
+                    <h2 class="text-4xl font-extrabold text-yellow-300 mb-2">${tr.name}</h2>
+                    <p class="text-lg text-slate-300 mb-2">${tr.role} — ${tr.location}</p>
+                    <p class="text-slate-400 mb-3 font-semibold">Spécialité : ${tr.specialty}</p>
+                    <hr class="mb-6 border-slate-600">
+                    <div class="mb-5">
+                        <strong class="text-yellow-400">Histoire :</strong> 
+                        <span class="text-slate-300">${tr.history}</span>
+                    </div>
+                    <div class="mb-5">
+                        <strong class="text-yellow-400">Lore :</strong> 
+                        <span class="text-slate-300">${tr.lore}</span>
+                    </div>
+                    <div class="mb-5">
+                        <strong class="text-yellow-400">Anecdotes :</strong>
+                        <ul class="list-disc ml-8 text-slate-300 mt-2 space-y-1">
+                            ${tr.anecdotes.map(anec => `<li>${anec}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <hr class="mb-6 border-slate-600">
+                    <div>
+                        <h3 class="text-xl text-white mb-3 flex items-center">
+                            <i class="fas fa-cards-blank mr-2 text-yellow-400"></i>Cartes TCG
+                        </h3>
+                        <div id="trainer-tcg-cards" class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+                            <div class="text-center text-slate-400 py-4">
+                                <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                <p class="text-sm">Chargement des cartes...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Charger les cartes TCG pour ce dresseur
+            if (tr.tcgCards && tr.tcgCards.length > 0) {
+                loadTrainerProfileTCGCards(tr);
+            } else {
+                document.getElementById('trainer-tcg-cards').innerHTML = `
+                    <div class="col-span-full text-center text-slate-500 py-4">
+                        <i class="fas fa-info-circle text-xl mb-2"></i>
+                        <p class="text-sm">Aucune carte TCG disponible pour ce dresseur.</p>
+                    </div>
+                `;
+            }
         }
 
         async function loadTrainerTCGCards(trainer, gen, index) {
@@ -788,8 +933,13 @@
                         const smallImage = card.images?.small || '';
                         const cardName = (card.name || '').replace(/'/g, "\\'");
                         const cardSet = ((card.set?.name || '')).replace(/'/g, "\\'");
+                        const cardRarity = ((card.rarity || '')).replace(/'/g, "\\'");
                         return `
-                        <div class="tcg-card rounded-lg p-2 cursor-pointer" onclick="openTCGModal('${largeImage}', '${cardName}', '${cardSet}')">
+                        <div class="tcg-card rounded-lg p-2 cursor-pointer tcg-card-item" 
+                             data-image="${encodeURIComponent(largeImage)}"
+                             data-name="${encodeURIComponent(cardName)}"
+                             data-set="${encodeURIComponent(cardSet)}"
+                             data-rarity="${encodeURIComponent(cardRarity)}">
                             <img src="${smallImage}" 
                                  alt="${card.name}" 
                                  class="w-full h-auto rounded"
@@ -804,31 +954,206 @@
                     <p class="text-slate-400 text-xs text-center mt-2">+ ${uniqueCards.length - 6} autres cartes</p>
                 ` : ''}
             `;
+            
+            // Ajouter les event listeners pour ouvrir la modal
+            container.querySelectorAll('.tcg-card-item').forEach(cardElement => {
+                cardElement.addEventListener('click', function() {
+                    const imageUrl = decodeURIComponent(this.dataset.image);
+                    const name = decodeURIComponent(this.dataset.name);
+                    const set = decodeURIComponent(this.dataset.set);
+                    const rarity = decodeURIComponent(this.dataset.rarity);
+                    openCardModal({
+                        imageLarge: imageUrl,
+                        name: name,
+                        setName: set,
+                        rarity: rarity
+                    });
+                });
+            });
         }
 
-        // Fonctions pour la modal TCG
-        function openTCGModal(imageUrl, name, set) {
-            const modal = document.getElementById('tcg-modal');
-            const modalImage = document.getElementById('tcg-modal-image');
-            const modalName = document.getElementById('tcg-modal-name');
-            const modalSet = document.getElementById('tcg-modal-set');
+        async function loadTrainerProfileTCGCards(trainer) {
+            const container = document.getElementById('trainer-tcg-cards');
+            const cacheKey = `${trainer.nameEN}-profile`;
             
-            modalImage.src = imageUrl;
-            modalName.textContent = name;
-            modalSet.textContent = set || '';
+            // Check cache
+            if (trainerCardsCache.has(cacheKey)) {
+                displayTrainerProfileTCGCards(container, trainerCardsCache.get(cacheKey));
+                return;
+            }
             
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Empêcher le scroll
+            // Try to load cards for each TCG card name with retry logic
+            const allCards = [];
+            const maxRetries = 2;
+            
+            for (const cardName of trainer.tcgCards) {
+                let success = false;
+                
+                for (let attempt = 1; attempt <= maxRetries && !success; attempt++) {
+                    try {
+                        const apiUrl = `https://api.pokemontcg.io/v2/cards?q=name:"${encodeURIComponent(cardName)}"&pageSize=10`;
+                        const timeout = 20000;
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), timeout);
+                        
+                        try {
+                            const response = await fetch(apiUrl, {
+                                headers: { 'Accept': 'application/json' },
+                                signal: controller.signal,
+                                mode: 'cors'
+                            });
+                            
+                            clearTimeout(timeoutId);
+                            
+                            if (response.ok) {
+                                const data = await response.json();
+                                if (data.data && data.data.length > 0) {
+                                    allCards.push(...data.data);
+                                    success = true;
+                                }
+                            }
+                        } catch (fetchError) {
+                            clearTimeout(timeoutId);
+                            if (fetchError.name === 'AbortError' && attempt < maxRetries) {
+                                await new Promise(resolve => setTimeout(resolve, 3000));
+                                continue;
+                            }
+                            break;
+                        }
+                    } catch (error) {
+                        break;
+                    }
+                }
+            }
+            
+            if (allCards.length > 0) {
+                trainerCardsCache.set(cacheKey, allCards);
+                displayTrainerProfileTCGCards(container, allCards);
+            } else {
+                container.innerHTML = `
+                    <div class="col-span-full text-center text-slate-500 py-4">
+                        <i class="fas fa-info-circle text-xl mb-2"></i>
+                        <p class="text-sm">Aucune carte TCG trouvée pour ce dresseur.</p>
+                    </div>
+                `;
+            }
         }
 
-        function closeTCGModal() {
-            const modal = document.getElementById('tcg-modal');
-            modal.classList.remove('active');
-            document.body.style.overflow = ''; // Réactiver le scroll
+        function displayTrainerProfileTCGCards(container, cards) {
+            // Remove duplicates by card ID
+            const uniqueCards = Array.from(new Map(cards.map(card => [card.id, card])).values());
+            
+            container.innerHTML = uniqueCards.map(card => {
+                const largeImage = card.images?.large || card.images?.small || '';
+                const smallImage = card.images?.small || '';
+                const cardName = (card.name || '').replace(/'/g, "\\'");
+                const cardSet = ((card.set?.name || '')).replace(/'/g, "\\'");
+                const cardRarity = ((card.rarity || '')).replace(/'/g, "\\'");
+                return `
+                    <div class="tcg-card rounded-lg p-2 cursor-pointer tcg-card-item" 
+                         data-image="${encodeURIComponent(largeImage)}"
+                         data-name="${encodeURIComponent(cardName)}"
+                         data-set="${encodeURIComponent(cardSet)}"
+                         data-rarity="${encodeURIComponent(cardRarity)}">
+                        <img src="${smallImage}" 
+                             alt="${card.name}" 
+                             class="w-full h-auto rounded"
+                             onerror="this.src='https://via.placeholder.com/245x342/1e293b/ffffff?text=${encodeURIComponent(card.name)}'">
+                        <p class="text-white text-xs mt-2 truncate">${card.name}</p>
+                        <p class="text-slate-400 text-xs">${card.set?.name || ''}</p>
+                    </div>
+                `;
+            }).join('');
+            
+            // Ajouter les event listeners pour ouvrir la modal
+            container.querySelectorAll('.tcg-card-item').forEach(cardElement => {
+                cardElement.addEventListener('click', function() {
+                    const imageUrl = decodeURIComponent(this.dataset.image);
+                    const name = decodeURIComponent(this.dataset.name);
+                    const set = decodeURIComponent(this.dataset.set);
+                    const rarity = decodeURIComponent(this.dataset.rarity);
+                    openCardModal({
+                        imageLarge: imageUrl,
+                        name: name,
+                        setName: set,
+                        rarity: rarity
+                    });
+                });
+            });
+        }
+
+        // Sélecteurs de la modal (une seule fois)
+        let cardModalOverlay, cardModalImg, cardModalName, cardModalSet, cardModalRarity, cardModalClose;
+
+        // Ouvrir la modal avec les infos d'une carte
+        function openCardModal({ imageLarge, name, setName, rarity }) {
+            if (!cardModalOverlay || !cardModalImg) {
+                console.error('Modal not initialized!');
+                return;
+            }
+
+            cardModalImg.src = imageLarge || '';
+            cardModalImg.alt = name || 'Carte Pokémon';
+            if (cardModalName) cardModalName.textContent = name || 'Carte inconnue';
+            if (cardModalSet) cardModalSet.textContent = setName ? `Set : ${setName}` : 'Set inconnu';
+            if (cardModalRarity) cardModalRarity.textContent = rarity ? `Rareté : ${rarity}` : '';
+
+            cardModalOverlay.classList.add('is-open');
+            document.body.style.overflow = 'hidden'; // bloque le scroll en fond
+        }
+
+        // Fermer la modal
+        function closeCardModal() {
+            if (cardModalOverlay) {
+                cardModalOverlay.classList.remove('is-open');
+                document.body.style.overflow = '';
+            }
         }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialiser les sélecteurs de la modal
+            cardModalOverlay = document.getElementById('card-modal-overlay');
+            cardModalImg = document.getElementById('card-modal-img');
+            cardModalName = document.getElementById('card-modal-name');
+            cardModalSet = document.getElementById('card-modal-set');
+            cardModalRarity = document.getElementById('card-modal-rarity');
+            cardModalClose = document.getElementById('card-modal-close');
+
+            if (!cardModalOverlay || !cardModalImg) {
+                console.error('Modal elements not found!');
+            } else {
+                // Bouton ×
+                if (cardModalClose) {
+                    cardModalClose.addEventListener('click', closeCardModal);
+                }
+
+                // Clic en dehors de la boîte (sur l'overlay)
+                cardModalOverlay.addEventListener('click', (event) => {
+                    if (event.target === cardModalOverlay) {
+                        closeCardModal();
+                    }
+                });
+
+                // Touche Échap
+                window.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape' || event.key === 'Esc') {
+                        if (cardModalOverlay && cardModalOverlay.classList.contains('is-open')) {
+                            closeCardModal();
+                        }
+                    }
+                });
+            }
+            
+            // Barre de recherche
+            const searchInput = document.getElementById('trainer-search');
+            if (searchInput) {
+                searchInput.addEventListener('input', () => {
+                    const term = searchInput.value.trim().toLowerCase();
+                    loadTrainers(currentGeneration, term);
+                });
+            }
+            
             loadTrainers(1);
             
             // Scroll reveal
@@ -843,23 +1168,6 @@
             document.querySelectorAll('.scroll-reveal').forEach(el => {
                 observer.observe(el);
             });
-            
-            // Fermer la modal en cliquant en dehors de l'image
-            const modal = document.getElementById('tcg-modal');
-            if (modal) {
-                modal.addEventListener('click', function(e) {
-                    if (e.target === modal) {
-                        closeTCGModal();
-                    }
-                });
-                
-                // Fermer avec la touche Escape
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape' && modal.classList.contains('active')) {
-                        closeTCGModal();
-                    }
-                });
-            }
         });
     </script>
 </body>
